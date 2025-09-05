@@ -106,8 +106,8 @@ const ProformaEditScreen = () => {
 
           return {
             product_id: product.id,
-            name: product.name || `Produit ${product.id}`,
-            code: product.code || `PROD${product.id}`,
+            name: product.product_name || `Produit ${product.id}`,
+            code: product?.product?.code || `PROD${product.id}`,
             quantity: parseFloat(item.quantity) || 1,
             sale_price: parseFloat(item.sale_price) || 0,
             discount: 0,

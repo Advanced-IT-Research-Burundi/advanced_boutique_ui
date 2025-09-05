@@ -92,8 +92,6 @@ const ProductEditScreen = () => {
     const loadOptions = async () => {
       try {
         setLoadingOptions(true);
-        
-        
         const categoriesResponse = await ApiService.get('/api/categories');
         if (categoriesResponse.success) {
           const categoriesFormatted = categoriesResponse.data.categories.data.map(category => ({

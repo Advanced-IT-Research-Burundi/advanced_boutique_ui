@@ -13,6 +13,7 @@ const ProductEditScreen = () => {
   
   
   const [categoryOptions, setCategoryOptions] = useState([]);
+    const [unitOptions, setUnitOptions] = useState([]);
   const [loadingOptions, setLoadingOptions] = useState(true);
   const [currentImage, setCurrentImage] = useState(null);
 
@@ -92,6 +93,8 @@ const ProductEditScreen = () => {
     const loadOptions = async () => {
       try {
         setLoadingOptions(true);
+        
+        
         const categoriesResponse = await ApiService.get('/api/categories');
         if (categoriesResponse.success) {
           const categoriesFormatted = categoriesResponse.data.categories.data.map(category => ({
@@ -99,6 +102,16 @@ const ProductEditScreen = () => {
             label: category.name
           }));
           setCategoryOptions(categoriesFormatted);
+        }
+
+        const unitsResponse = await ApiService.get('/api/units');
+                
+        if (unitsResponse.success) {
+          const unitsFormatted = unitsResponse.data.data.map(unit => ({
+            value: unit.id,
+            label: unit.name + ' ( ' + unit.abbreviation + ' )'
+          }));
+          setUnitOptions(unitsFormatted);
         }
         
       } catch (error) {
@@ -335,16 +348,16 @@ const ProductEditScreen = () => {
                     </div>
 
                     <div className="col-md-4">
-                      <FormField
+                       <FormField
                         name="unit"
                         form={form}
-                        type="text"
+                        type="select"
                         label="Unité"
-                        placeholder="Ex: pièce, kg, litre"
+                        placeholder="Sélectionnez une unité"
                         icon="pi pi-calculator"
                         required
                         helperText="Unité de mesure du produit"
-                        disabled={form.loading}
+                        options={unitOptions}
                       />
                     </div>
 

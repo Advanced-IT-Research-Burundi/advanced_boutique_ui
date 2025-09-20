@@ -392,7 +392,11 @@ const ProformaCreateScreen = () => {
                   <select
                     className="form-select"
                     value={selectedStock}
-                    onChange={(e) => setSelectedStock(e.target.value)}
+                    onChange={(e) => {
+                      setSelectedStock(e.target.value)
+                      setProducts([])
+                      clearCart()
+                    }}
                     disabled={loading}
                   >
                     <option value="">Sélectionner un stock</option>

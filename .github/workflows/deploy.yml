@@ -1,42 +1,87 @@
-name: Deploy via SSH
+name: Test SSH Secrets
 
 on:
-  push:
-    branches:
-      - master
-  workflow_dispatch:
+  workflow_dispatch:  # Déclenché manuellement uniquement
 
 jobs:
-  run_pull:
-    name: run pull
+  test_secrets:
+    name: Test SSH Configuration
     runs-on: ubuntu-latest
     
     steps:
-      - name: Setup SSH keys
+      - name: Test secrets existence and format
         run: |
-          # Crée le dossier ~/.ssh s'il n'existe pas
+          echo "=== TESTING SECRETS ==="
+          
+          # Test SSH_HOST
+          if [ -z "${{ secrets.SSH_HOST }}" ]; then
+            echo "❌ SSH_HOST is empty or missing"
+          else
+            echo "✅ SSH_HOST is set (value: ${{ secrets.SSH_HOST }})"
+          fi
+          
+          # Test SSH_USER  
+          if [ -z "${{ secrets.SSH_USER }}" ]; then
+            echo "❌ SSH_USER is empty or missing"
+          else
+            echo "✅ SSH_USER is set (value: ${{ secrets.SSH_USER }})"
+          fi
+          
+          # Test SSH_PORT
+          if [ -z "${{ secrets.SSH_PORT }}" ]; then
+            echo "❌ SSH_PORT is empty or missing"
+          else
+            echo "✅ SSH_PORT is set (value: ${{ secrets.SSH_PORT }})"
+          fi
+          
+          # Test WORK_DIR
+          if [ -z "${{ secrets.WORK_DIR }}" ]; then
+            echo "❌ WORK_DIR is empty or missing"
+          else
+            echo "✅ WORK_DIR is set (value: ${{ secrets.WORK_DIR }})"
+          fi
+          
+          # Test SSH_PRIVATE_KEY (sans afficher le contenu)
+          if [ -z "${{ secrets.SSH_PRIVATE_KEY }}" ]; then
+            echo "❌ SSH_PRIVATE_KEY is empty or missing"
+          else
+            echo "✅ SSH_PRIVATE_KEY is set"
+            # Test format de la clé
+            echo "${{ secrets.SSH_PRIVATE_KEY }}" | head -1 | grep -q "BEGIN.*PRIVATE KEY" && \
+            echo "✅ SSH_PRIVATE_KEY appears to have correct format" || \
+            echo "❌ SSH_PRIVATE_KEY may have incorrect format"
+          fi
+      
+      - name: Test SSH connectivity (without authentication)
+        run: |
+          echo "=== TESTING SSH CONNECTIVITY ==="
+          
+          # Test si l'hôte est accessible
+          echo "Testing connectivity to ${{ secrets.SSH_HOST }}:${{ secrets.SSH_PORT }}"
+          
+          # Timeout après 10 secondes
+          timeout 10 bash -c "cat < /dev/null > /dev/tcp/${{ secrets.SSH_HOST }}/${{ secrets.SSH_PORT }}" && \
+          echo "✅ Host ${{ secrets.SSH_HOST }}:${{ secrets.SSH_PORT }} is reachable" || \
+          echo "❌ Host ${{ secrets.SSH_HOST }}:${{ secrets.SSH_PORT }} is not reachable"
+      
+      - name: Test SSH key format in detail
+        run: |
+          echo "=== TESTING SSH KEY FORMAT ==="
+          
+          # Créer le fichier de clé temporaire
           mkdir -p ~/.ssh
-          # Ajoute la clé privée depuis le secret
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          # Définit les permissions correctes
-          chmod 600 ~/.ssh/id_rsa
-          # Ajoute l'hôte SSH connu (avec retry en cas d'échec)
-          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts 2>/dev/null || \
-          ssh-keyscan ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
-          chmod 644 ~/.ssh/known_hosts
-      
-      - name: Check SSH folder
-        run: |
-          echo "Listing ~/.ssh folder contents:"
-          ls -la ~/.ssh
-          echo "Checking id_rsa permissions:"
-          stat ~/.ssh/id_rsa
-          echo "Checking known_hosts permissions:"
-          stat ~/.ssh/known_hosts
-      
-      - name: Connect and pull
-        run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} -p ${{ secrets.SSH_PORT }} "cd ${{ secrets.WORK_DIR }} && git pull"
-      
-      - name: Cleanup
-        run: rm -rf ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/test_key
+          chmod 600 ~/.ssh/test_key
+          
+          # Vérifier le format de la clé
+          echo "Key file size: $(wc -c < ~/.ssh/test_key) bytes"
+          echo "First line: $(head -1 ~/.ssh/test_key)"
+          echo "Last line: $(tail -1 ~/.ssh/test_key)"
+          
+          # Test avec ssh-keygen
+          ssh-keygen -l -f ~/.ssh/test_key 2>/dev/null && \
+          echo "✅ SSH key format is valid" || \
+          echo "❌ SSH key format is invalid"
+          
+          # Cleanup
+          rm -f ~/.ssh/test_key

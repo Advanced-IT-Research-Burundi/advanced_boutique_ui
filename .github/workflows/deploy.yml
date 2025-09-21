@@ -10,13 +10,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: install ssh keys
+    - name: Setup SSH keys
       run: |
-        install -m 600 -D /dev/null ~/.ssh/id_rsa
+        # Crée le dossier ~/.ssh s'il n'existe pas
+        mkdir -p ~/.ssh
+        # Ajoute la clé privée depuis le secret
         echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        # Définit les permissions correctes
+        chmod 600 ~/.ssh/id_rsa
+        # Ajoute l'hôte SSH connu
         ssh-keyscan -H ${{ secrets.SSH_HOST }} > ~/.ssh/known_hosts
+        chmod 644 ~/.ssh/known_hosts
 
-    - name: check ssh folder
+    - name: Check SSH folder
       run: |
         echo "Listing ~/.ssh folder contents:"
         ls -la ~/.ssh
@@ -25,8 +31,9 @@ jobs:
         echo "Checking known_hosts permissions:"
         stat ~/.ssh/known_hosts
 
-    - name: connect and pull
-      run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} -p ${{ secrets.SSH_PORT }} "cd ${{ secrets.WORK_DIR }} && git pull"
+    - name: Connect and pull
+      run: |
+        ssh -o StrictHostKeyChecking=yes ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} -p ${{ secrets.SSH_PORT }} "cd ${{ secrets.WORK_DIR }} && git pull"
 
-    - name: cleanup
+    - name: Cleanup
       run: rm -rf ~/.ssh

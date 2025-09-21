@@ -11,13 +11,22 @@ jobs:
 
     steps:
     - name: install ssh keys
-      # check this thread to understand why its needed:
-      # https://stackoverflow.com/a/70447517
       run: |
         install -m 600 -D /dev/null ~/.ssh/id_rsa
         echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
         ssh-keyscan -H ${{ secrets.SSH_HOST }} > ~/.ssh/known_hosts
+
+    - name: check ssh folder
+      run: |
+        echo "Listing ~/.ssh folder contents:"
+        ls -la ~/.ssh
+        echo "Checking id_rsa permissions:"
+        stat ~/.ssh/id_rsa
+        echo "Checking known_hosts permissions:"
+        stat ~/.ssh/known_hosts
+
     - name: connect and pull
-      run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} -p ${{ secrets.SSH_PORT }} "cd ${{ secrets.WORK_DIR }} && git checkout ${{ secrets.MAIN_BRANCH }} && git stash && git pull && npm install && npm run build && exit"
+      run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} -p ${{ secrets.SSH_PORT }} "cd ${{ secrets.WORK_DIR }} && git pull"
+
     - name: cleanup
       run: rm -rf ~/.ssh

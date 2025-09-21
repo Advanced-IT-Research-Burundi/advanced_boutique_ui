@@ -1,3 +1,5 @@
+name: Deploy via SSH
+
 on:
   push:
     branches:
@@ -8,32 +10,33 @@ jobs:
   run_pull:
     name: run pull
     runs-on: ubuntu-latest
-
+    
     steps:
-    - name: Setup SSH keys
-      run: |
-        # Crée le dossier ~/.ssh s'il n'existe pas
-        mkdir -p ~/.ssh
-        # Ajoute la clé privée depuis le secret
-        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-        # Définit les permissions correctes
-        chmod 600 ~/.ssh/id_rsa
-        # Ajoute l'hôte SSH connu
-        ssh-keyscan -H ${{ secrets.SSH_HOST }} > ~/.ssh/known_hosts
-        chmod 644 ~/.ssh/known_hosts
-
-    - name: Check SSH folder
-      run: |
-        echo "Listing ~/.ssh folder contents:"
-        ls -la ~/.ssh
-        echo "Checking id_rsa permissions:"
-        stat ~/.ssh/id_rsa
-        echo "Checking known_hosts permissions:"
-        stat ~/.ssh/known_hosts
-
-    - name: Connect and pull
-      run: |
-        ssh -o StrictHostKeyChecking=yes ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} -p ${{ secrets.SSH_PORT }} "cd ${{ secrets.WORK_DIR }} && git pull"
-
-    - name: Cleanup
-      run: rm -rf ~/.ssh
+      - name: Setup SSH keys
+        run: |
+          # Crée le dossier ~/.ssh s'il n'existe pas
+          mkdir -p ~/.ssh
+          # Ajoute la clé privée depuis le secret
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          # Définit les permissions correctes
+          chmod 600 ~/.ssh/id_rsa
+          # Ajoute l'hôte SSH connu (avec retry en cas d'échec)
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts 2>/dev/null || \
+          ssh-keyscan ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+      
+      - name: Check SSH folder
+        run: |
+          echo "Listing ~/.ssh folder contents:"
+          ls -la ~/.ssh
+          echo "Checking id_rsa permissions:"
+          stat ~/.ssh/id_rsa
+          echo "Checking known_hosts permissions:"
+          stat ~/.ssh/known_hosts
+      
+      - name: Connect and pull
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} -p ${{ secrets.SSH_PORT }} "cd ${{ secrets.WORK_DIR }} && git pull"
+      
+      - name: Cleanup
+        run: rm -rf ~/.ssh

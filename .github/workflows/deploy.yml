@@ -1,9 +1,6 @@
 name: Test SSH Secrets
 
 on:
-  push:
-    branches:
-      - master
   workflow_dispatch:  # Déclenché manuellement uniquement
 
 jobs:
@@ -88,3 +85,95 @@ jobs:
           
           # Cleanup
           rm -f ~/.ssh/test_key
+      
+      - name: Test full SSH connection and working directory
+        run: |
+          echo "=== TESTING FULL SSH CONNECTION ==="
+          
+          # Setup SSH
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          
+          # Ajouter l'hôte SSH connu
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts 2>/dev/null || \
+          ssh-keyscan ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+          
+          echo "Testing SSH connection..."
+          
+          # Test de connexion SSH basique
+          ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 \
+              ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} -p ${{ secrets.SSH_PORT }} \
+              "echo 'SSH connection successful'" && \
+          echo "✅ SSH connection works" || \
+          (echo "❌ SSH connection failed" && exit 1)
+      
+      - name: Test working directory access
+        run: |
+          echo "=== TESTING WORKING DIRECTORY ==="
+          
+          # Test d'accès au répertoire de travail
+          ssh -o StrictHostKeyChecking=no \
+              ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} -p ${{ secrets.SSH_PORT }} \
+              "cd ${{ secrets.WORK_DIR }} && pwd" && \
+          echo "✅ Working directory ${{ secrets.WORK_DIR }} is accessible" || \
+          (echo "❌ Cannot access working directory ${{ secrets.WORK_DIR }}" && exit 1)
+          
+          # Afficher le contenu du répertoire
+          echo "Current directory contents:"
+          ssh -o StrictHostKeyChecking=no \
+              ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} -p ${{ secrets.SSH_PORT }} \
+              "cd ${{ secrets.WORK_DIR }} && ls -la"
+      
+      - name: Test file creation in working directory
+        run: |
+          echo "=== TESTING FILE CREATION ==="
+          
+          # Créer un fichier de test
+          ssh -o StrictHostKeyChecking=no \
+              ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} -p ${{ secrets.SSH_PORT }} \
+              "cd ${{ secrets.WORK_DIR }} && echo 'Bonjour depuis GitHub Actions!' > bonjour.txt && echo 'File created successfully'"
+          
+          # Vérifier que le fichier a été créé
+          ssh -o StrictHostKeyChecking=no \
+              ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} -p ${{ secrets.SSH_PORT }} \
+              "cd ${{ secrets.WORK_DIR }} && cat bonjour.txt" && \
+          echo "✅ File creation and read successful" || \
+          (echo "❌ File creation failed" && exit 1)
+          
+          # Afficher les informations du fichier
+          echo "File details:"
+          ssh -o StrictHostKeyChecking=no \
+              ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} -p ${{ secrets.SSH_PORT }} \
+              "cd ${{ secrets.WORK_DIR }} && ls -la bonjour.txt"
+      
+      - name: Test git availability (if needed)
+        run: |
+          echo "=== TESTING GIT AVAILABILITY ==="
+          
+          # Vérifier si git est installé
+          ssh -o StrictHostKeyChecking=no \
+              ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} -p ${{ secrets.SSH_PORT }} \
+              "which git && git --version" && \
+          echo "✅ Git is available" || \
+          echo "⚠️  Git is not available or not in PATH"
+          
+          # Si on est dans un repo git, afficher le statut
+          ssh -o StrictHostKeyChecking=no \
+              ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} -p ${{ secrets.SSH_PORT }} \
+              "cd ${{ secrets.WORK_DIR }} && if [ -d .git ]; then echo 'Git repository detected:'; git status --short; git log -1 --oneline; else echo 'Not a git repository'; fi"
+      
+      - name: Cleanup test files
+        run: |
+          echo "=== CLEANUP ==="
+          
+          # Supprimer le fichier de test
+          ssh -o StrictHostKeyChecking=no \
+              ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} -p ${{ secrets.SSH_PORT }} \
+              "cd ${{ secrets.WORK_DIR }} && rm -f bonjour.txt && echo 'Test file cleaned up'"
+          
+          # Cleanup local SSH files
+          rm -rf ~/.ssh
+          
+          echo "✅ All tests completed successfully!"

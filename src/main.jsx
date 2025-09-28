@@ -12,6 +12,7 @@ import 'primeicons/primeicons.css';
 
 import FRANCAIS from './lang/fr.json'
 import ENGLISH from './lang/en.json'
+import KI from './lang/ki.json'
 import { IntlProvider } from 'react-intl'
 import { Provider, useSelector } from 'react-redux'
 import { BrowserRouter } from 'react-router-dom'
@@ -19,14 +20,17 @@ import stores from './stores/index.js';
 import { localeSelector } from './stores/selectors/appSelectors.js';
 
 const IntlApp = () => {
-    const locale = useSelector(localeSelector)
+  const locale = useSelector(localeSelector)
     var messages
     switch (locale) {
               case 'en':
-                        messages = ENGLISH
-                        break
+                  messages = ENGLISH
+                   break
+              case 'ki':
+                  messages = KI
+                   break
               default:
-                        messages = FRANCAIS
+                  messages = FRANCAIS
     }
     return (
               <IntlProvider messages={messages} locale={locale} defaultLocale="fr">

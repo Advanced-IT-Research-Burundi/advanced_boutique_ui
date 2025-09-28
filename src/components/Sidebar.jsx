@@ -3,11 +3,16 @@ import { useLocation, Link } from 'react-router-dom';
 import { Tooltip } from 'primereact/tooltip';
 import { useIntl } from "react-intl";
 import { getMenuItems } from '../config/routeConfig.js';
+import usePolicies from '../hooks/usePolicies';
 
 const Sidebar = ({ isCollapsed, onToggle }) => {
   const location = useLocation();
   const intl = useIntl();
   const menuItems = getMenuItems();
+
+  const {  isAllowedListRole } = usePolicies();
+
+
 
   return (
     <div className="no-print">
@@ -46,7 +51,9 @@ const Sidebar = ({ isCollapsed, onToggle }) => {
 
         <ul className="sidebar-nav list-unstyled p-0 mt-3">
           {menuItems.map((item, index) => (
+            isAllowedListRole(item.policy) && (
             <li key={index} className="nav-item mb-1">
+             
               <Link
                 to={item.path}
                 className={`nav-link d-flex align-items-center text-decoration-none ${
@@ -98,7 +105,7 @@ const Sidebar = ({ isCollapsed, onToggle }) => {
                 )}
               </Link>
             </li>
-          ))}
+          ))  )}
         </ul>
       </nav>
 

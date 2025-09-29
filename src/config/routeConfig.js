@@ -53,7 +53,7 @@ export const routesConfig = [
     icon: 'pi pi-truck',
     labelKey: 'sidebar.suppliers',
     component: 'SuppliersScreen',
-    policy: ['admin', 'editor', 'viewer', 'salesperson']
+    policy: ['admin']
   },
   {
     path: '/commandes',

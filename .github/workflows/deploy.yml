@@ -1,160 +1,40 @@
-name: Test SSH Secrets
-
+name: Remote SSH Command
 on:
   push:
     branches:
       - master
-  workflow_dispatch:  # Déclenché manuellement uniquement
 
 jobs:
-  test_secrets:
-    name: Test SSH Configuration
+  build:
+    name: Build
     runs-on: ubuntu-latest
-    
     steps:
-      - name: Test secrets existence and format
-        run: |
-          echo "=== TESTING SECRETS ==="
-          
-          # Test SSH_HOST
-          if [ -z "${{ secrets.SSH_HOST }}" ]; then
-            echo "❌ SSH_HOST is empty or missing"
-          else
-            echo "✅ SSH_HOST is set (value: ${{ secrets.SSH_HOST }})"
-          fi
-          
-          # Test SSH_USER  
-          if [ -z "${{ secrets.SSH_USER }}" ]; then
-            echo "❌ SSH_USER is empty or missing"
-          else
-            echo "✅ SSH_USER is set (value: ${{ secrets.SSH_USER }})"
-          fi
-          
-          # Test SSH_PORT
-          if [ -z "${{ secrets.SSH_PORT }}" ]; then
-            echo "❌ SSH_PORT is empty or missing"
-          else
-            echo "✅ SSH_PORT is set (value: ${{ secrets.SSH_PORT }})"
-          fi
-          
-          # Test WORK_DIR
-          if [ -z "${{ secrets.WORK_DIR }}" ]; then
-            echo "❌ WORK_DIR is empty or missing"
-          else
-            echo "✅ WORK_DIR is set (value: ${{ secrets.WORK_DIR }})"
-          fi
-          
-          # Test SSH_PRIVATE_KEY (sans afficher le contenu)
-          if [ -z "${{ secrets.SSH_PRIVATE_KEY }}" ]; then
-            echo "❌ SSH_PRIVATE_KEY is empty or missing"
-          else
-            echo "✅ SSH_PRIVATE_KEY is set"
-            # Test format de la clé
-            echo "${{ secrets.SSH_PRIVATE_KEY }}" | head -1 | grep -q "BEGIN.*PRIVATE KEY" && \
-            echo "✅ SSH_PRIVATE_KEY appears to have correct format" || \
-            echo "❌ SSH_PRIVATE_KEY may have incorrect format"
-          fi
-      
-      - name: Test SSH connectivity (without authentication)
-        run: |
-          echo "=== TESTING SSH CONNECTIVITY ==="
-          
-          # Test si l'hôte est accessible
-          echo "Testing connectivity to ${{ secrets.SSH_HOST }}:${{ secrets.SSH_PORT }}"
-          
-          # Timeout après 10 secondes
-          timeout 10 bash -c "cat < /dev/null > /dev/tcp/${{ secrets.SSH_HOST }}/${{ secrets.SSH_PORT }}" && \
-          echo "✅ Host ${{ secrets.SSH_HOST }}:${{ secrets.SSH_PORT }} is reachable" || \
-          echo "❌ Host ${{ secrets.SSH_HOST }}:${{ secrets.SSH_PORT }} is not reachable"
-      
-      - name: Test SSH key format in detail
-        run: |
-          echo "=== TESTING SSH KEY FORMAT ==="
-          
-          # Créer le fichier de clé temporaire
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/test_key
-          chmod 600 ~/.ssh/test_key
-          
-          # Vérifier le format de la clé
-          echo "Key file size: $(wc -c < ~/.ssh/test_key) bytes"
-          echo "First line: $(head -1 ~/.ssh/test_key)"
-          echo "Last line: $(tail -1 ~/.ssh/test_key)"
-          
-          # Test avec ssh-keygen
-          ssh-keygen -l -f ~/.ssh/test_key 2>/dev/null && \
-          echo "✅ SSH key format is valid" || \
-          echo "❌ SSH key format is invalid"
-          
-          # Cleanup
-          rm -f ~/.ssh/test_key
-    
-      
-      - name: Test working directory access
-        run: |
-          echo "=== TESTING WORKING DIRECTORY ==="
-          
-          # Test d'accès au répertoire de travail
-          ssh -o StrictHostKeyChecking=no \
-              ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} -p ${{ secrets.SSH_PORT }} \
-              "cd ${{ secrets.WORK_DIR }} && pwd" && \
-          echo "✅ Working directory ${{ secrets.WORK_DIR }} is accessible" || \
-          (echo "❌ Cannot access working directory ${{ secrets.WORK_DIR }}" && exit 1)
-          
-          # Afficher le contenu du répertoire
-          echo "Current directory contents:"
-          ssh -o StrictHostKeyChecking=no \
-              ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} -p ${{ secrets.SSH_PORT }} \
-              "cd ${{ secrets.WORK_DIR }} && ls -la"
-      
-      - name: Test file creation in working directory
-        run: |
-          echo "=== TESTING FILE CREATION ==="
-          
-          # Créer un fichier de test
-          ssh -o StrictHostKeyChecking=no \
-              ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} -p ${{ secrets.SSH_PORT }} \
-              "cd ${{ secrets.WORK_DIR }} && echo 'Bonjour depuis GitHub Actions!' > bonjour.txt && echo 'File created successfully'"
-          
-          # Vérifier que le fichier a été créé
-          ssh -o StrictHostKeyChecking=no \
-              ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} -p ${{ secrets.SSH_PORT }} \
-              "cd ${{ secrets.WORK_DIR }} && cat bonjour.txt" && \
-          echo "✅ File creation and read successful" || \
-          (echo "❌ File creation failed" && exit 1)
-          
-          # Afficher les informations du fichier
-          echo "File details:"
-          ssh -o StrictHostKeyChecking=no \
-              ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} -p ${{ secrets.SSH_PORT }} \
-              "cd ${{ secrets.WORK_DIR }} && ls -la bonjour.txt"
-      
-      - name: Test git availability (if needed)
-        run: |
-          echo "=== TESTING GIT AVAILABILITY ==="
-          
-          # Vérifier si git est installé
-          ssh -o StrictHostKeyChecking=no \
-              ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} -p ${{ secrets.SSH_PORT }} \
-              "which git && git --version" && \
-          echo "✅ Git is available" || \
-          echo "⚠️  Git is not available or not in PATH"
-          
-          # Si on est dans un repo git, afficher le statut
-          ssh -o StrictHostKeyChecking=no \
-              ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} -p ${{ secrets.SSH_PORT }} \
-              "cd ${{ secrets.WORK_DIR }} && if [ -d .git ]; then echo 'Git repository detected:'; git status --short; git log -1 --oneline; else echo 'Not a git repository'; fi"
-      
-      - name: Cleanup test files
-        run: |
-          echo "=== CLEANUP ==="
-          
-          # Supprimer le fichier de test
-          ssh -o StrictHostKeyChecking=no \
-              ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} -p ${{ secrets.SSH_PORT }} \
-              "cd ${{ secrets.WORK_DIR }} && rm -f bonjour.txt && echo 'Test file cleaned up'"
-          
-          # Cleanup local SSH files
-          rm -rf ~/.ssh
-          
-          echo "✅ All tests completed successfully!"
+      - name: Execute remote SSH commands using password
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{secrets.SSH_HOST}}
+          username: ${{secrets.SSH_USER}}
+          password: ${{secrets.SSH_PASSWORD}}
+          port: ${{secrets.SSH_PORT}}
+          script: |
+            cd ${{secrets.WORK_DIR}}
+            # Configuration Git
+            git config --global credential.helper store
+            git config --global user.name "Jean-Lionel"
+            git config --global user.email "nijeanlionel@gmail.com"
+            git config pull.rebase true
+
+            # Mettre à jour la branche distante avec rebase en utilisant le token GitHub
+            git reset --hard HEAD
+            git clean -f -d
+            git checkout ${{secrets.MAIN_BRANCH}}
+            git pull https://${{ secrets.GIT_TOKEN }}@github.com/Advanced-IT-Research-Burundi/advanced_boutique_ui.git ${{secrets.MAIN_BRANCH}}
+
+            # Confirmation du déploiement
+            echo "Deployed successfully" >> deploy.log
+            date +"%Y-%m-%d %H:%M:%S" >> deploy.log
+            # Installer les dépendances et builder le projet
+            npm install
+            npm run build
+
+

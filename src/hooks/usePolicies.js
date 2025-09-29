@@ -4,10 +4,10 @@ import { useAuth } from "../contexts/AuthContext";
 const usePolicies = () => {
     const { user } = useAuth();
 
-    const isAdmin = user?.role === 'admin';
-    const isEditor = user?.role === 'editor';
-    const isViewer = user?.role === 'viewer';
-    const isSalesPerson = user?.role === 'salesperson';
+    const isAdmin = () => user?.role === 'admin';
+    const isEditor = () => user?.role === 'editor';
+    const isViewer = () => user?.role === 'viewer';
+    const isSalesPerson = () => user?.role === 'salesperson';
 
     const isAllowed = (policy) => {
         if (!policy) return true;

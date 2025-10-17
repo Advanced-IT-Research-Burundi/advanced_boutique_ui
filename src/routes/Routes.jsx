@@ -7,8 +7,13 @@ import MainLayout from '../layouts/MainLayout';
 import LoginScreen from '../pages/Auth/LoginScreen';
 import DashboardScreen from '../pages/DashboardScreen';
 //sales
-import SalesScreen from '../pages/sales/SalesScreen';
+import SalesScreen from '../pages/sales/SalesScreen.jsx';
 import SalesCreateScreen from '../pages/sales/SalesCreateScreen.jsx';
+//localsales
+import LocalSalesScreen from '../pages/sales/LocalSalesScreen.jsx';
+import LocalSalesCreateScreen from '../pages/sales/LocalSalesCreateScreen.jsx';
+import LocalSalesShowScreen from '../pages/sales/LocalSalesShowScreen.jsx';
+import LocalSalesEditScreen from '../pages/sales/LocalSalesEditScreen.jsx';
 //proforma
 import ProformaScreen from '../pages/profoma/ProformaScreen'
 import ProformaCreateScreen from '../pages/profoma/ProformaCreateScreen.jsx';
@@ -130,6 +135,11 @@ const protectedRoutes = [
   { path: '/sales', component: SalesScreen },
   { path: '/sales/:id', component: SalesShowScreen },
   { path: '/sales/create', component: SalesCreateScreen},
+  //Local Sales
+  { path: '/localsales', component: LocalSalesScreen },
+  { path: '/localsales/:id', component: LocalSalesShowScreen },
+  { path: '/localsales/create', component: LocalSalesCreateScreen},
+  { path: '/localsales/:id/edit', component: LocalSalesEditScreen},
   //proforma
   { path: '/proforma',component : ProformaScreen},
   { path: '/proforma/create', component: ProformaCreateScreen },

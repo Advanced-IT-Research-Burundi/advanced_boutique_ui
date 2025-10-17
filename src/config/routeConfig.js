@@ -14,6 +14,13 @@ export const routesConfig = [
     policy: ['admin', 'editor', 'viewer', 'salesperson']
   },
   {
+    path: '/localsales',
+    icon: 'pi pi-dollar',
+    labelKey: 'sidebar.localSales',
+    component: 'SalesScreen',
+    policy: ['admin', 'editor', 'viewer', 'salesperson']
+  },
+  {
     path: '/proforma',
     icon: 'pi pi-file',
     labelKey: 'sidebar.proforma',

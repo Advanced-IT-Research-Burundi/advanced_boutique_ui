@@ -5,8 +5,10 @@ import ApiService from '../../services/api.js';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchApiData } from '../../stores/slicer/apiDataSlicer.js';
 import { formatCurrency, getClientInfo ,formatDate} from './../../utils/helpers.js'
+import  usePolicies  from '../../hooks/usePolicies.js';
 
 const StockShowScreen = () => {
+  const { isAdmin } = usePolicies();
   const { id } = useParams();
   const navigate = useNavigate();
   const [stock, setStock] = useState({});
@@ -332,8 +334,11 @@ const StockShowScreen = () => {
                       )}
                     </p>
                   </div>
-                  
-                  <div className="mb-3">
+
+
+              
+                  {isAdmin() && (
+                    <div className="mb-3">
                     <label className="fw-bold text-muted">Utilisateurs associés:</label>
                     <p className="mb-1">
                       {users.length > 0 ? (
@@ -356,6 +361,7 @@ const StockShowScreen = () => {
                       )}
                     </p>
                   </div>
+                  )}
                   
                   <div className="mb-3">
                     <label className="fw-bold text-muted">Créé par:</label>
@@ -485,8 +491,8 @@ const StockShowScreen = () => {
             </div>
           </div>
 
-          {/* Actions rapides */}
-          <div className="card shadow-sm border-0">
+          {isAdmin() && (
+            <div className="card shadow-sm border-0">
             <div className="card-header bg-dark text-white">
               <h6 className="mb-0">
                 <i className="pi pi-flash me-2"></i>Actions rapides
@@ -532,10 +538,15 @@ const StockShowScreen = () => {
               </div>
             </div>
           </div>
+          )}
+          {/* Actions rapides */}
+          
         </div>
-      </div>
+    </div>
+    
 
       {/* Section des utilisateurs associés */}
+      {isAdmin() && (
       <div className="card shadow-sm border-0 mb-4">
         <div className="card-header bg-info text-white d-flex justify-content-between align-items-center">
           <h6 className="mb-0">
@@ -665,7 +676,7 @@ const StockShowScreen = () => {
           )}
         </div>
       </div>
-
+      )}
       {/* Bouton retour */}
       <div className="row mt-4">
         <div className="col-12">

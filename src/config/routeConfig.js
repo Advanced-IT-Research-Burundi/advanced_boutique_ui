@@ -3,55 +3,64 @@ export const routesConfig = [
     path: '/dashboard',
     icon: 'pi pi-home',
     labelKey: 'sidebar.dashboard',
-    component: 'DashboardScreen'
+    component: 'DashboardScreen',
+    policy: ['admin']
   },
   {
     path: '/sales',
     icon: 'pi pi-dollar',
     labelKey: 'sidebar.sales',
-    component: 'SalesScreen'
+    component: 'SalesScreen',
+    policy: ['admin', 'editor', 'viewer', 'salesperson']
   },
   {
     path: '/proforma',
     icon: 'pi pi-file',
     labelKey: 'sidebar.proforma',
-    component: 'SalesScreen'
+    component: 'SalesScreen',
+    policy: ['admin'] 
   },
   {
     path: '/stocks',
     icon: 'pi pi-box',
     labelKey: 'sidebar.stocks',
-    component: 'StocksScreen'
+    component: 'StocksScreen',
+    policy: ['admin', 'editor', 'viewer', 'salesperson']
   },
   {
     path: '/products',
     icon: 'pi pi-shopping-bag',
     labelKey: 'sidebar.products',
-    component: 'ProductsScreen'
+    component: 'ProductsScreen',
+    policy: ['admin', 'editor', 'viewer', 'salesperson']
   },
   {
     path: '/categories',
     icon: 'pi pi-tags',
     labelKey: 'sidebar.categories',
-    component: 'CategoriesScreen'
+    component: 'CategoriesScreen',
+    policy: ['admin', 'editor', 'viewer', 'salesperson']
   },
   {
     path: '/clients',
     icon: 'pi pi-user',
     labelKey: 'sidebar.clients',
-    component: 'ClientsScreen'
+    component: 'ClientsScreen',
+    policy: ['admin', 'editor', 'viewer', 'salesperson']
   },
   {
     path: '/suppliers',
     icon: 'pi pi-truck',
     labelKey: 'sidebar.suppliers',
-    component: 'SuppliersScreen'
+    component: 'SuppliersScreen',
+    policy: ['admin']
   },
   {
     path: '/commandes',
     icon: 'pi pi-upload',
     labelKey: 'sidebar.imports',
-    component: 'ImportsScreen'
+    component: 'ImportsScreen',
+    policy: ['admin']
   },
   // {
   //   path: '/purchases',
@@ -63,51 +72,59 @@ export const routesConfig = [
     path: '/users',
     icon: 'pi pi-users',
     labelKey: 'sidebar.users',
-    component: 'UsersScreen'
+    component: 'UsersScreen',
+    policy: ['admin']
   },
   {
     path: '/vehicles',
     icon: 'pi pi-car',
     labelKey: 'sidebar.vehicles',
-    component: 'VehiclesScreen'
+    component: 'VehiclesScreen',
+    policy: ['admin']
   },
   {
     path: '/cash-registers',
     icon: 'pi pi-wallet',
     labelKey: 'sidebar.cashRegisters',
-    component: 'CashRegistersScreen'
+    component: 'CashRegistersScreen',
+    policy: ['admin']
   },
   {
     path: '/transactions',
     icon: 'pi pi-refresh',
     labelKey: 'sidebar.transactions',
-    component: 'TransactionsScreen'
+    component: 'TransactionsScreen',
+    policy: ['admin']
   },
   {
     path: '/expenses',
     icon: 'pi pi-money-bill',
     labelKey: 'sidebar.expenses',
-    component: 'ExpensesScreen'
+    component: 'ExpensesScreen',
+    policy: ['admin']
   },
   {
     path: '/expense-types',
     icon: 'pi pi-cog',
     labelKey: 'sidebar.expenseTypes',
-    component: 'ExpenseTypesScreen'
+    component: 'ExpenseTypesScreen',
+    policy: ['admin']
   },
   {
     path: '/reports',
     icon: 'pi pi-chart-bar',
     labelKey: 'sidebar.reports',
-    component: 'ReportsScreen'
+    component: 'ReportsScreen',
+    policy: ['admin']
   }
 ];
 
 export const getMenuItems = () => {
-  return routesConfig.map(({ path, icon, labelKey }) => ({
+  return routesConfig.map(({ path, icon, labelKey, policy }) => ({
     path,
     icon,
-    labelKey
+    labelKey,
+    policy
   }));
 };
 

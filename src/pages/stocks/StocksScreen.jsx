@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchApiData } from '../../stores/slicer/apiDataSlicer.js';
 import { API_CONFIG } from '../../services/config.js';
+import usePolicies from '../../hooks/usePolicies.js';
 
 const StockScreen = () => {
   const intl = useIntl();
@@ -28,6 +29,7 @@ const StockScreen = () => {
   const [deleteModal, setDeleteModal] = useState({ show: false, stockId: null });
   const toast = useRef(null);
   const navigate = useNavigate();
+  const { isAdmin } = usePolicies();
 
   const dispatch = useDispatch();
   const { data , loading} = useSelector(state => state.apiData);
@@ -197,14 +199,18 @@ const StockScreen = () => {
                 <i className="pi pi-refresh me-1"></i>
                 {loading ? intl.formatMessage({id: "stock.refreshing"}) : intl.formatMessage({id: "stock.refresh"})}
               </button>
-             <div className="d-flex gap-2">
+              {isAdmin() && (
+              <div className="d-flex gap-2">
+                
                <a onClick={() => navigate('/stocks/transfer')} className="btn btn-outline-info">
                 <i className="pi pi-sync me-1"></i>{intl.formatMessage({id: "stock.transferBetweenStocks"})}
-              </a>
+                </a>
+                
               <a onClick={() => navigate('/stocks/create')} className="btn btn-primary">
                 <i className="pi pi-plus-circle me-1"></i>{intl.formatMessage({id: "stock.newStock"})}
               </a>
              </div>
+             )}
             </div>
           </div>
         </div>
@@ -413,14 +419,17 @@ const StockScreen = () => {
                           >
                             <i className="pi pi-eye"></i>
                           </a>
-                          <a 
-                            onClick={() => navigate(`/stocks/${stock.id}/edit`)}
-                            className="btn btn-sm btn-outline-warning" 
-                            title={intl.formatMessage({id: "stock.edit"})}
-                          >
+                          {isAdmin() && (
+                            <a 
+                              onClick={() => navigate(`/stocks/${stock.id}/edit`)}
+                              className="btn btn-sm btn-outline-warning" 
+                              title={intl.formatMessage({id: "stock.edit"})}
+                            >
                             <i className="pi pi-pencil"></i>
                           </a>
-                          <button 
+                          )}
+                          {isAdmin() && ( 
+                            <button 
                             type="button" 
                             className="btn btn-sm btn-outline-danger" 
                             title={intl.formatMessage({id: "stock.delete"})}
@@ -428,6 +437,7 @@ const StockScreen = () => {
                           >
                             <i className="pi pi-trash"></i>
                           </button>
+                          )}
                         </div>
                       </td>
                     </tr>

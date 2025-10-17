@@ -7,8 +7,8 @@ const initial = {
 export default function appReducer(contributionState = initial, action) {
           switch (action.type) {
                     case SET_LOCALE:
-                              return {...contributionState, locale: action.payload}
+                         return {...contributionState, locale: action.payload}
                     default:
-                              return contributionState
+                      return contributionState
           }
 }

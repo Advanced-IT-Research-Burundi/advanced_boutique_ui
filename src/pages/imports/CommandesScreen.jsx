@@ -6,6 +6,7 @@ import { API_CONFIG } from '../../services/config.js';
 import ApiService from '../../services/api.js';
 import { useNavigate, Link } from 'react-router-dom';
 import ImportHeader from './ImportHeader.jsx';
+import { CURRENCY_LIST } from '../../constants/constants.js';
 
 
 
@@ -15,7 +16,7 @@ const CommandesScreen = () => {
   const [productSearch, setProductSearch] = useState("");
   const [products, setProducts] = useState([]);
   const [cart, setCart] = useState([]);
-  const [orderDetails, setOrderDetails] = useState({ commentaire: '', numCommande: '' });
+  const [orderDetails, setOrderDetails] = useState({ commentaire: '', numCommande: '', currency: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const { data, loading } = useSelector(state => state.apiData);
@@ -131,7 +132,8 @@ const CommandesScreen = () => {
         poids: totalWeight,
         products: cart,
         commentaire: orderDetails.commentaire,
-        numCommande: orderDetails.numCommande
+        numCommande: orderDetails.numCommande,
+        currency: orderDetails.currency
       };
 
       await ApiService.post(API_CONFIG.ENDPOINTS.COMMANDES, orderData);
@@ -155,7 +157,7 @@ const CommandesScreen = () => {
     return new Intl.NumberFormat('fr-FR', {
       minimumFractionDigits: 0,
       maximumFractionDigits: 2
-    }).format(amount) + ' FBU';
+    }).format(amount) + ' ' + orderDetails.currency;
   };
 
   return (
@@ -237,6 +239,18 @@ const CommandesScreen = () => {
                   onChange={(e) => handleOrderDetailsChange('numCommande', e.target.value)}
                   placeholder="Optionnel"
                 />
+              </div>
+
+              <div className="mb-3">
+                <label className="form-label">Currency</label>
+                <select name="currency" id="" value={orderDetails.currency} onChange={(e) => handleOrderDetailsChange('currency', e.target.value)} className="form-select">
+                  <option value="">Sélectionnez une devise</option>
+                  {CURRENCY_LIST.map((currency) => (
+                    <option key={currency.value} value={currency.value}>
+                      {currency.label}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div className="mb-3">

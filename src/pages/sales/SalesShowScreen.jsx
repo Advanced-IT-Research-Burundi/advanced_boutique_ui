@@ -118,7 +118,7 @@ const SalesShowScreen = () => {
                 {data.sale.sale_items.map((item, index) => (
                   <tr key={item.id}>
                     <td style={tdStyle}>{index + 1}</td>
-                    <td style={tdStyle}>{item.product?.name}</td>
+                    <td style={tdStyle}>{item.product_name ?? item.product?.name}</td>
                     <td style={tdStyle}>{item.quantity}</td>
                     <td style={tdStyle}>{item.sale_price.toLocaleString()} FBu</td>
                     <td style={tdStyle}>{item.subtotal.toLocaleString()} FBu</td>

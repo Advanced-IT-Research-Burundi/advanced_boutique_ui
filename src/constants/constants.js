@@ -27,6 +27,19 @@ const CART_ACTIONS = {
     'SAJ': 'Sortie par Ajustement',
     'ST': 'Sortie par Transfert',
     'SAU': 'Sortie Autre'
-  };
+};
+
+export const CURRENCY_LIST = [
+  {
+    value: 'FBU',
+    label: 'FBU'
+  },
+  {
+    value: 'USD',
+    label: 'USD'
+  }
+]
+
+  
 
   export default {CART_ACTIONS, MOUVEMENT_TYPES};

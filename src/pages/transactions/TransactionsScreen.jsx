@@ -269,10 +269,10 @@ const TransactionScreen = () => {
 
       {/* Stats Cards */}
       <div className="row mb-4">
-        <StatCard icon="dollar" title={intl.formatMessage({id: "transaction.totalInflow"})} value={formatCurrency(stats.totalInflow || 0)} color="success" loading={loading} />
-        <StatCard icon="money-bill-wave" title={intl.formatMessage({id: "transaction.totalOutflow"})} value={formatCurrency(stats.totalOutflow || 0)} color="danger" loading={loading} />
-        <StatCard icon="balance-scale" title={intl.formatMessage({id: "transaction.balance"})} value={formatCurrency((stats.totalInflow || 0) - (stats.totalOutflow || 0))} color="info" loading={loading} />
-        <StatCard icon="calendar" title={intl.formatMessage({id: "transaction.todayTransactions"})} value={stats.todayCount || 0} color="warning" loading={loading} />
+        <StatCard icon="dollar" title={intl.formatMessage({id: "transaction.totalInflow"})} value={formatCurrency(stats.total_in || 0)} color="success" loading={loading} />
+        <StatCard icon="money-bill" title={intl.formatMessage({id: "transaction.totalOutflow"})} value={formatCurrency(stats.total_out || 0)} color="danger" loading={loading} />
+        <StatCard icon="wallet" title={intl.formatMessage({id: "transaction.balance"})} value={formatCurrency((stats.total_in || 0) - (stats.total_out || 0))} color="info" loading={loading} />
+        <StatCard icon="calendar" title={intl.formatMessage({id: "transaction.todayTransactions"})} value={stats.today_count || 0} color="warning" loading={loading} />
       </div>
 
       {/* Filters */}
@@ -329,7 +329,7 @@ const TransactionScreen = () => {
               </select>
             </div>
             
-            <div className="col-md-1">
+            {/* <div className="col-md-1">
               <label className="form-label">{intl.formatMessage({id: "transaction.agency"})}</label>
               <select 
                 className="form-select" 
@@ -343,7 +343,7 @@ const TransactionScreen = () => {
                   </option>
                 ))}
               </select>
-            </div>
+            </div> */}
             
             <div className="col-md-1">
               <label className="form-label">{intl.formatMessage({id: "transaction.user"})}</label>
@@ -437,7 +437,7 @@ const TransactionScreen = () => {
                   <th className="border-0 px-4 py-3">{intl.formatMessage({id: "transaction.reference"})}</th>
                   <th className="border-0 px-4 py-3">{intl.formatMessage({id: "transaction.agency"})}</th>
                   <th className="border-0 px-4 py-3">{intl.formatMessage({id: "transaction.createdBy"})}</th>
-                  <th className="border-0 px-4 py-3">{intl.formatMessage({id: "transaction.actions"})}</th>
+                  {/* <th className="border-0 px-4 py-3">{intl.formatMessage({id: "transaction.actions"})}</th> */}
                 </tr>
               </thead>
               <tbody>
@@ -525,13 +525,13 @@ const TransactionScreen = () => {
                       </td>
                       <td className="px-4">
                         <div className="btn-group" role="group">
-                          <a 
+                          {/* <a 
                             href={`/cash-transactions/${transaction.id}`} 
                             className="btn btn-sm btn-outline-info" 
                             title={intl.formatMessage({id: "transaction.view"})}
                           >
                             <i className="pi pi-eye"></i>
-                          </a>
+                          </a> */}
                           {canEdit(transaction) && (
                             <a 
                               href={`/cash-transactions/${transaction.id}/edit`} 

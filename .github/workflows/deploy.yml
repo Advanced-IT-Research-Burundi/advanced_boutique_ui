@@ -36,5 +36,3 @@ jobs:
             # Installer les dépendances et builder le projet
             npm install
             npm run build
-
-

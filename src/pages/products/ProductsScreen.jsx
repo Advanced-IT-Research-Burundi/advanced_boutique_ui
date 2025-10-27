@@ -37,15 +37,15 @@ const ProductScreen = () => {
 
   useEffect(() => {
     if (data.products) {
-      setProducts(data.products.products.data || []);
+      setProducts(data.products.products || []);
       setCategories(data.products.categories || []);
       setAgencies(data.products.agencies || []);
       setPagination({
-        current_page: data.products.products.current_page,
-        last_page: data.products.products.last_page,
-        total: data.products.products.total,
-        from: data.products.products.from,
-        to: data.products.products.to
+        current_page: data.products.current_page,
+        last_page: data.products.last_page,
+        total: data.products.total,
+        from: data.products.from,
+        to: data.products.to
       });
     }
   }, [data]);
@@ -308,8 +308,7 @@ const ProductScreen = () => {
                   <th className="border-0 px-4 py-3">{intl.formatMessage({id: "product.unit"})}</th>
                   <th className="border-0 px-4 py-3">{intl.formatMessage({id: "product.alertThreshold"})}</th>
                   <th className="border-0 px-4 py-3">{intl.formatMessage({id: "product.agency"})}</th>
-                  <th className="border-0 px-4 py-3">{intl.formatMessage({id: "product.createdBy"})}</th>
-                  <th className="border-0 px-4 py-3">{intl.formatMessage({id: "product.createdOn"})}</th>
+               
                   <th className="border-0 px-4 py-3">{intl.formatMessage({id: "product.actions"})}</th>
                 </tr>
               </thead>
@@ -394,11 +393,11 @@ const ProductScreen = () => {
                       </td>
                       <td className="px-4">
                         <span className="text-primary fw-bold">
-                          {formatCurrency(product.sale_price)}
+                          {formatCurrency(product.sale_price_ttc)}
                         </span>
                       </td>
                       <td className="px-4">
-                        <span className="badge bg-info text-white">{ product?.unit?.name ? (product?.unit?.name + ' ( ' + product?.unit?.abbreviation + ' )' ) : product?.unit_name }</span>
+                        <span className="badge bg-info text-white">{ product?.unit }</span>
                       </td>
                       <td className="px-4">
                         <span className="badge bg-warning text-dark">{product.alert_quantity}</span>
@@ -407,30 +406,14 @@ const ProductScreen = () => {
                         {product.agency ? (
                           <div className="d-flex align-items-center">
                             <i className="pi pi-building text-info me-2"></i>
-                            {product.agency.name}
+                            {product?.agency?.name}
                           </div>
                         ) : (
                           <span className="text-muted">{intl.formatMessage({id: "product.notAssigned"})}</span>
                         )}
                       </td>
-                      <td className="px-4">
-                        <div className="d-flex align-items-center">
-                          <i className="pi pi-user-check text-success me-2"></i>
-                          {product.created_by?.last_name || product.created_by?.name || 'N/A'}
-                        </div>
-                      </td>
-                      <td className="px-4">
-                        <div>
-                          <strong>{formatDate(product.created_at)}</strong>
-                          <br />
-                          <small className="text-muted">
-                            {new Date(product.created_at).toLocaleTimeString('fr-FR', { 
-                              hour: '2-digit', 
-                              minute: '2-digit' 
-                            })}
-                          </small>
-                        </div>
-                      </td>
+                     
+                     
                       <td className="px-4">
                         <div className="btn-group" role="group">
                           <a 

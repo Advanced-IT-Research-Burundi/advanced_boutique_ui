@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchApiData } from '../../stores/slicer/apiDataSlicer';
@@ -169,10 +169,21 @@ function StockPrintAll() {
     }, {});
     
     let counterLine = 1;
+
+    const [displayValue, setDisplayValue] = useState(false);
+
+    function afficherValeurStock() {
+        setDisplayValue(!displayValue);
+    }
+    
     return (
-        <div className="print-wrapper">
+        <div className="print-wrapper ">
+            <div className="d-flex justify-content-center align-items-center gap-2">
+               
             <Button variant="primary" onClick={() => print("stock-product-details")}>Imprimer</Button>
             <Button variant="primary" onClick={() => generatePdf("stock-product-details")}>Télécharger PDF</Button>
+            <Button variant="primary" onClick={() => afficherValeurStock()}>Afficher la Valeur de Stock</Button>
+            </div>
 
             <div id="stock-product-details" className=""
                 style={{
@@ -217,8 +228,12 @@ function StockPrintAll() {
                             {/* <th>Catégorie</th> */}
                             <th>Nom du Produit</th>
                             <th style={{ textAlign: 'right' }}>Qté</th>
+
+                            {displayValue && <>
                             <th style={{ textAlign: 'right' }}>Prix Unit.</th>
                             <th style={{ textAlign: 'right' }}>Stock Val.</th>
+                            </>}
+                          
                         </tr>
                     </thead>
                     <tbody>
@@ -238,14 +253,18 @@ function StockPrintAll() {
                                {/*  <td>{product?.product?.category?.name}</td> */}
                                 <td>{product.product_name}</td>
                                 <td style={{ textAlign: 'right' }}>{product.quantity}</td>
+
+                                {displayValue && <>
                                 <td style={{ textAlign: 'right' }}>{formatNumber(product.product?.sale_price)} </td>
                                 <th style={{ textAlign: 'right' }}>{formatNumber((product.product?.sale_price * product.quantity))}
                                     
-                                    </th>
+                                    </th> </>}
                                     </tr>))}
                                     <tr>
-                                    <th colSpan={5}>Total</th>
-                                    <th style={{ textAlign: 'right' }}>{formatNumber(category[1].reduce((total, product) => total + (product.product?.sale_price * product.quantity), 0))}</th>
+                                        <th colSpan={5}>Total</th>
+                                        {displayValue && <>
+                                            <th style={{ textAlign: 'right' }}>{formatNumber(category[1].reduce((total, product) => total + (product.product?.sale_price * product.quantity), 0))}</th>
+                                            </>}
                                     </tr>
                                </>
 
@@ -256,8 +275,10 @@ function StockPrintAll() {
                         
                         <tr>
                             <th colSpan={5}>Total Général</th>
-                            <th style={{ textAlign: 'right' }}>{formatNumber(totalStockValue)}</th>
-                            </tr>
+                            {displayValue && <th style={{ textAlign: 'right' }}>{formatNumber(totalStockValue)}</th>}
+
+                        </tr>
+                        
                     </tbody>
                 </table>
             </div>

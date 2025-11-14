@@ -29,6 +29,11 @@ const textLeft = {
     textAlign: 'left',
 }
 
+const textRight = {
+    ...tdStyle,
+    textAlign: 'right',
+}
+
 const textCenter = {
     ...tdStyle,
     textAlign: 'center',
@@ -49,13 +54,23 @@ function BonEntreShowScreen() {
     const { formatNumber, formatDate } = useFormat();
     
     useEffect(() => {
-        dispatch(fetchApiData({
+        initData();
+    }, [])
+
+
+    const  initData = async () => {
+       await dispatch(fetchApiData({
             url: `${API_CONFIG.ENDPOINTS.COMMANDES}/${id}`,
             itemKey: itemKey,
             params: { id }
         }));
-    }, [id, dispatch, itemKey])
+    }
     
+    const totalDepense = data?.depenses?.reduce((total, depense) => total + depense?.amount, 0);
+    const exchangeRate = data?.exchange_rate;
+
+    const totalRevient = data?.details?.reduce((total, detail) => total + detail?.total_price_v, 0);
+    const totalBenefice = totalRevient - totalDepense;
     
     
     return (
@@ -102,7 +117,7 @@ function BonEntreShowScreen() {
                                    <td style={textLeft}>{item?.product_code}</td>
                                    <td style={textLeft}>{item?.item_name}</td>
                                    <td style={textCenter}>{item?.pu}</td>
-                                   <td style={textCenter}>{item?.taux_change}</td>
+                                   <td style={textCenter}>{exchangeRate}</td>
                                    <td style={textCenter}>{item?.quantity}</td>
                                    <td style={textCenter}>{item?.price}</td>
                                    <td style={textCenter}>{item?.total_price}</td>
@@ -110,7 +125,58 @@ function BonEntreShowScreen() {
                                </tr>
                            ))}
                           
+                            <tr>
+                                <th  colSpan={6}></th>
+                                <td style={textCenter}>{formatNumber(data?.total_price)}</td>
+                                <td style={textCenter}>{formatNumber(data?.total_price_v)}</td>
+                            </tr>
+                            <tr>
+                                <th  colSpan={6}>Total</th>
+                                <td style={textCenter}>{formatNumber(data?.total_price)}</td>
+                                <td style={textCenter}>{formatNumber(data?.total_price_v)}</td>
+                            </tr>
+                    
                         </tbody>
+                    </table>
+                    <br />
+                    
+                    <table style={{width: '100%', borderCollapse: 'collapse', border: '1px solid #000'}}>
+                        <thead>
+                            <th>Dépenses</th>
+                            <th>Montant</th>
+                        </thead>
+                        <tbody>
+                            
+                         
+                            {data?.depenses?.map((item, index) => (
+                                <tr key={index}>
+                                    <td style={textLeft} >{item?.name_depense_importation_type}</td>
+                                    <td style={textRight}>{item?.amount}</td>
+                                </tr>
+                            ))}
+                            <tr>
+                                <td ></td>
+                                <td style={textRight}>
+                                    {formatNumber(totalDepense)}
+                                </td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+                    <table style={{width: '100%', borderCollapse: 'collapse', border: '1px solid #000'}}>
+                           
+                            <tr>
+                                <th>PRIX DE REVIENT TOTAL</th>
+                                <td style={textRight}>{formatNumber(data?.total_price_v + totalDepense)}</td>
+                            </tr>
+                            <tr>
+                                <th>PRIX DE VENTE TOTAL</th>
+                                <td style={textRight}>{formatNumber(data?.total_price_v + totalDepense)}</td>
+                            </tr>
+                            <tr>
+                                <th>BENEFICE</th>
+                                <td style={textRight}>{formatNumber(data?.total_price_v + totalDepense)}</td>
+                            </tr>
                     </table>
                 </div>
         </div>

@@ -15,7 +15,7 @@ const EditCommandeScreen = () => {
   const [productSearch, setProductSearch] = useState("");
   const [products, setProducts] = useState([]);
   const [cart, setCart] = useState([]);
-  const [orderDetails, setOrderDetails] = useState({ commentaire: '', numCommande: '' });
+  const [orderDetails, setOrderDetails] = useState({ commentaire: '', numCommande: '', exchange_rate: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
   
@@ -127,7 +127,8 @@ const EditCommandeScreen = () => {
       setSelectedOrder(order);
       setOrderDetails({
         commentaire: order.commentaire || '',
-        numCommande: order.numCommande || ''
+        numCommande: order.numCommande || '',
+        exchange_rate: order.exchange_rate || ''
       });
       
       // Set cart with order details (products)
@@ -238,11 +239,13 @@ const EditCommandeScreen = () => {
         vehicule_id: selectedVehicle.id,
         matricule: selectedVehicle.immatriculation,
         poids: totalWeight,
+        exchange_rate: orderDetails.exchange_rate,
         details: cart.map(item => ({
           product_code: item.product_code,
           item_name: item.item_name,
           company_code: item.company_code,
           quantity: item.quantity,
+
           weight_kg: item.weight_kg,
           pu: item.pu,
           remise: item.remise || 0
@@ -466,6 +469,17 @@ const EditCommandeScreen = () => {
                       className="form-control" 
                       value={orderDetails.numCommande}
                       onChange={(e) => handleOrderDetailsChange('numCommande', e.target.value)}
+                      placeholder="Optionnel"
+                      disabled={loadingStates.loadingOrderDetails}
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label className="form-label">Taux de change</label>
+                    <input 
+                      type="text" 
+                      className="form-control" 
+                      value={orderDetails.exchange_rate}
+                      onChange={(e) => handleOrderDetailsChange('exchange_rate', e.target.value)}
                       placeholder="Optionnel"
                       disabled={loadingStates.loadingOrderDetails}
                     />

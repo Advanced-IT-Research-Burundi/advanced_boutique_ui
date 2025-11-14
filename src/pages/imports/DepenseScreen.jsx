@@ -6,6 +6,7 @@ import { API_CONFIG, APP_CONSTANT } from '../../services/config';
 import ImportHeader from './ImportHeader';
 import ApiService from '../../services/api.js';
 
+
 function DepenseScreen() {
     const { id } = useParams();
     const dispatch = useDispatch()
@@ -112,11 +113,9 @@ function DepenseScreen() {
     const handleDelete = async (depenseId) => {
         if (window.confirm('Êtes-vous sûr de vouloir supprimer cette dépense?')) {
             try {
-                dispatch(await fetchApiData({
-                    url: `${API_CONFIG.ENDPOINTS.DEPENSES_IMPORTATION}/${depenseId}`,
-                    method: 'DELETE',
-                    itemKey: 'deletedDepense',
-                }));
+               
+
+                ApiService.delete(`/api/depenses-importations/${depenseId}`);
                 
                 await loadDepenses();
                 alert('Dépense supprimée avec succès!');

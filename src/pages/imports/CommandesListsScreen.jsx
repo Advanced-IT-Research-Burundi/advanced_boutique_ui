@@ -356,7 +356,12 @@ const CommandesListsScreen = () => {
                         )}
                       </td>
                       <td className="px-4">
-                        <span className="badge bg-info text-white">En cours</span>
+                        
+                        {commande.status != 'approved' ? (
+                          <span className="badge bg-info text-white">En cours</span>
+                        ) : (
+                          <span className="badge bg-success text-white">Terminé</span>
+                        )}
                       </td>
                       <td className="px-4">
                         <div className="btn-group" role="group">
@@ -367,15 +372,7 @@ const CommandesListsScreen = () => {
                           >
                             <i className="pi pi-eye"></i>
                           </Link>
-                         
-                          <Link 
-                            to={`/commandes/${commande.id}/edit`} 
-                            className="btn btn-sm btn-outline-warning" 
-                            title="Modifier"
-                          >
-                            <i className="pi pi-pencil"></i>
-                          </Link>
-                          <Link 
+                           <Link 
                             to={`/depenses/${commande.id}/depenses`} 
                             className="btn btn-sm btn-outline-success" 
                             title="Depenses"
@@ -383,6 +380,17 @@ const CommandesListsScreen = () => {
                             <span className="me-2">Depenses</span>
                             <i className="pi pi-money-bill"></i>
                           </Link>
+                         {commande.status != 'approved' && (
+                            <>
+                            <Link 
+                            to={`/commandes/${commande.id}/edit`} 
+                            className="btn btn-sm btn-outline-warning" 
+                            title="Modifier"
+                          >
+                            <i className="pi pi-pencil"></i>
+                          </Link>
+
+                           
                           <button 
                             type="button" 
                             className="btn btn-sm btn-outline-danger" 
@@ -391,6 +399,9 @@ const CommandesListsScreen = () => {
                           >
                             <i className="pi pi-trash"></i>
                           </button>
+                            </>
+                          )}
+                        
                         </div>
                       </td>
                     </tr>

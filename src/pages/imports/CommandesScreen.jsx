@@ -128,6 +128,7 @@ const CommandesScreen = () => {
     try {
       const orderData = {
         vehicule_id: selectedVehicle.id,
+        exchange_rate: orderDetails.exchange_rate,
         matricule: selectedVehicle.immatriculation,
         poids: totalWeight,
         products: cart,
@@ -237,6 +238,17 @@ const CommandesScreen = () => {
                   className="form-control" 
                   value={orderDetails.numCommande}
                   onChange={(e) => handleOrderDetailsChange('numCommande', e.target.value)}
+                  placeholder="Optionnel"
+                />
+              </div>
+
+              <div className="mb-3">
+                <label className="form-label">Taux de change</label>
+                <input 
+                  type="text" 
+                  className="form-control" 
+                  value={orderDetails.exchange_rate}
+                  onChange={(e) => handleOrderDetailsChange('exchange_rate', e.target.value)}
                   placeholder="Optionnel"
                 />
               </div>

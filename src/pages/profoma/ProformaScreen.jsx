@@ -102,8 +102,14 @@ const ProformaScreen = () => {
 
   const handleDeleteProforma = async (proformaId) => {
     try {
-      dispatch(fetchApiData({ url: `/api/proformas/${proformaId}`, itemKey: 'proformas', method: 'DELETE' }));
-      showToast('success', intl.formatMessage({id: "proforma.proformaDeleted"}));
+      const response = await ApiService.delete(`/api/proformas/${proformaId}`);
+      if (response.success) {
+        showToast('success', intl.formatMessage({id: "proforma.proformaDeleted"}));
+        loadProformas(pagination.current_page);
+      } else {
+        showToast('error', response.message || intl.formatMessage({id: "proforma.deleteError"}));
+      }
+      
       loadProformas(pagination.current_page);
     } catch (error) {
       showToast('error', error.message || intl.formatMessage({id: "proforma.deleteError"}));

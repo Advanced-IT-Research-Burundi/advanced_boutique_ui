@@ -124,59 +124,70 @@ const ProductCreateScreen = () => {
 
   const handleSubmit = async (values) => {
     
-    const formData = new FormData();
+    try {
+       const formData = new FormData();
     
     
-    const calculatedTTC = calculateTTC(values.sale_price_ht, values.tva);
-    const finalValues = {
-      ...values,
-      sale_price_ttc: calculatedTTC
-    };
-    
-    Object.keys(finalValues).forEach(key => {
-      if (key === 'image' && finalValues[key] && finalValues[key].length > 0) {
-        formData.append(key, finalValues[key][0]);
-      } else if (key !== 'image') {
-        formData.append(key, finalValues[key] || '');
-      }
-    });
+        const calculatedTTC = calculateTTC(values.sale_price_ht, values.tva);
+        const finalValues = {
+          ...values,
+          sale_price_ttc: calculatedTTC
+        };
+        
+        Object.keys(finalValues).forEach(key => {
+          if (key === 'image' && finalValues[key] && finalValues[key].length > 0) {
+            formData.append(key, finalValues[key][0]);
+          } else if (key !== 'image') {
+            formData.append(key, finalValues[key] || '');
+          }
+        });
 
-    for (let [key, value] of formData.entries()) {
-      console.log(key, value);
-    }
+        for (let [key, value] of formData.entries()) {
+          console.log(key, value);
+        }
 
-    const response = await ApiService.post('/api/products', finalValues, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      }
-    });
+        const response = await ApiService.post('/api/products', finalValues, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        });
 
-    if (response.success) {
-      // Afficher un toast de succès
-      toast.current.show({
-        severity: 'success',
-        summary: 'Succès',
-        detail: 'Produit créé avec succès',
-        life: 3000
-      });
-      
-      setTimeout(() => {
-        navigate('/products');
-      }, 1000);
-      
-      return { success: true, message: 'Produit créé avec succès' };
-    } else {
+        if (response.success) {
+          // Afficher un toast de succès
+          toast.current.show({
+            severity: 'success',
+            summary: 'Succès',
+            detail: 'Produit créé avec succès',
+            life: 3000
+          });
+          
+          setTimeout(() => {
+            navigate('/products');
+          }, 1000);
+          
+          return { success: true, message: 'Produit créé avec succès' };
+        } else {
+          console.error('Erreur lors de la création du produit:', response);
+          toast.current.show({
+            severity: 'error',
+            summary: 'Erreur',
+            detail: response.message || 'Erreur lors de la création du produit',
+            life: 3000
+          });
+          
+          if (response.status === 422) {
+            throw { status: 422, errors: response.errors };
+          }
+        }
+    } catch (error) {
       toast.current.show({
         severity: 'error',
         summary: 'Erreur',
-        detail: response.message || 'Erreur lors de la création du produit',
+        detail: error.message || 'Erreur lors de la création du produit',
         life: 3000
       });
-      
-      if (response.status === 422) {
-        throw { status: 422, errors: response.errors };
-      }
     }
+    
   };
 
   const form = useForm({

@@ -154,7 +154,7 @@ const LivraisonScreen = () => {
         }))
       };
 
-      console.log('Livraison data:', deliveryData);
+      // console.log('Livraison data:', deliveryData);
       
       const response = await ApiService.post('/api/commande/livraison/valide', deliveryData);
       
@@ -512,7 +512,7 @@ const LivraisonScreen = () => {
                             >
                               <i className="pi pi-eye"></i>
                             </Link>
-                            {commande.status === 'pending' && (
+                            {/* {commande.status === 'pending' && (
                               <button 
                                 className="btn btn-sm btn-outline-success"
                                 onClick={() => approveCommande(commande.id)}
@@ -520,7 +520,7 @@ const LivraisonScreen = () => {
                               >
                                 <i className="pi pi-check"></i>
                               </button>
-                            )}
+                            )} */}
                           </div>
                         </td>
                       </tr>

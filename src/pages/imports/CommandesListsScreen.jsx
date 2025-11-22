@@ -220,12 +220,12 @@ const CommandesListsScreen = () => {
                 <i className="pi pi-refresh me-1"></i>
                 {loading ? 'Actualisation...' : 'Actualiser'}
               </button>
-              <button 
+              {/* <button 
                 onClick={() => navigate('/commandes/create')} 
                 className="btn btn-primary"
               >
                 <i className="pi pi-plus-circle me-1"></i>Nouvelle Commande
-              </button>
+              </button> */}
             </div>
           </div>
         </div>

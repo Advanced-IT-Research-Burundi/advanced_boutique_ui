@@ -16,7 +16,7 @@ const LivraisonScreen = () => {
   const [selectedStock, setSelectedStock] = useState(null);
   const [filters, setFilters] = useState({
     search: '',
-    status: 'pending' // pending, approved, delivered
+    status: '' // pending, approved, delivered
   });
   const [pagination, setPagination] = useState({
     current_page: 1,
@@ -39,17 +39,18 @@ const LivraisonScreen = () => {
   }, [filters.status]);
 
   useEffect(() => {
-    if (data.commandes && data.stocks) {
-      setCommandes(data.commandes.data || []);
+    if (data.livraisoncommandes && data.stocks) {
+      setCommandes(data.livraisoncommandes.data || []);
       setStocks(data?.stocks?.stocks?.data || []);
       setPagination({
-        current_page: data.commandes.current_page,
-        last_page: data.commandes.last_page,
-        total: data.commandes.total,
-        from: data.commandes.from,
-        to: data.commandes.to
+        current_page: data.livraisoncommandes.current_page,
+        last_page: data.livraisoncommandes.last_page,
+        total: data.livraisoncommandes.total,
+        from: data.livraisoncommandes.from,
+        to: data.livraisoncommandes.to
       });
     }
+    // console.log('Livraison commandes data:', data.livraisoncommandes);
   }, [data]);
 
   // Debounced search
@@ -95,7 +96,7 @@ const LivraisonScreen = () => {
   };
 
   const handleReset = () => {
-    setFilters({ search: '', status: 'pending' });
+    setFilters({ search: '', status: '' });
     setSelectedCommandes([]);
     setTimeout(() => loadCommandes(1), 0);
   };
@@ -159,10 +160,10 @@ const LivraisonScreen = () => {
       const response = await ApiService.post('/api/commande/livraison/valide', deliveryData);
       
       if (response.success) {
-        console.log(response)
-        showToast('success', response.message || 'Livraison validée avec succès');
-        setSelectedCommandes([]);
+        // console.log(response)
         loadCommandes(pagination.current_page);
+        setSelectedCommandes([]);
+        showToast('success', response.message || 'Livraison validée avec succès');
       } else {
         showToast('error', response.message || 'Erreur lors de la validation');
       }
@@ -369,6 +370,7 @@ const LivraisonScreen = () => {
                 value={filters.status} 
                 onChange={(e) => handleFilterChange('status', e.target.value)}
               >
+                <option value="">Tous</option>
                 <option value="pending">En attente</option>
                 <option value="approved">Approuvées</option>
               </select>
@@ -501,7 +503,7 @@ const LivraisonScreen = () => {
                           </button>
                         </td>
                         <td className="px-4">
-                          {getStatusBadge(commande.status || 'pending')}
+                          {getStatusBadge(commande.status || '')}
                         </td>
                         <td className="px-4">
                           <div className="btn-group" role="group">

@@ -30,7 +30,7 @@ const ProductScreen = () => {
 
   const dispatch = useDispatch();
   const { data , loading} = useSelector(state => state.apiData);
-  
+
   const apiURL = import.meta.env.VITE_APP_DEV_MODE_LOCAL === "false"
       ? import.meta.env.VITE_APP_BASE_URL
       : import.meta.env.VITE_APP_BASE_URL_LOCAL;
@@ -218,7 +218,7 @@ const ProductScreen = () => {
               className="btn btn-outline-primary"
               target="_blank"
               rel="noopener noreferrer"
-              href={`${apiURL}/products/pdf`}
+              href={`${apiURL}/api/product/pdf`}
               disabled={loading}
             >
               <i className="pi pi-file-pdf me-1"></i>

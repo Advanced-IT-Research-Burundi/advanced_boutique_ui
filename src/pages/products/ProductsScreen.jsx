@@ -30,9 +30,14 @@ const ProductScreen = () => {
 
   const dispatch = useDispatch();
   const { data , loading} = useSelector(state => state.apiData);
+  
+  const apiURL = import.meta.env.VITE_APP_DEV_MODE_LOCAL === "false"
+      ? import.meta.env.VITE_APP_BASE_URL
+      : import.meta.env.VITE_APP_BASE_URL_LOCAL;
 
   useEffect(() => {
     loadProducts();
+    
   }, []);
 
   useEffect(() => {
@@ -41,13 +46,14 @@ const ProductScreen = () => {
       setCategories(data.products.categories || []);
       setAgencies(data.products.agencies || []);
       setPagination({
-        current_page: data.products.current_page,
-        last_page: data.products.last_page,
-        total: data.products.total,
-        from: data.products.from,
-        to: data.products.to
+        current_page: data.products.pagination.current_page,
+        last_page: data.products.pagination.last_page,
+        total: data.products.pagination.total,
+        from: data.products.pagination.from,
+        to: data.products.pagination.to
       });
     }
+    console.log('Products data updated:', data);
   }, [data]);
 
   async function loadProducts(page = 1) {
@@ -207,6 +213,17 @@ const ProductScreen = () => {
                 <i className="pi pi-refresh me-1"></i>
                 {loading ? intl.formatMessage({id: "product.refreshing"}) : intl.formatMessage({id: "product.refresh"})}
               </button>
+              {/* Genenere un pdf boutton */}
+              <a
+              className="btn btn-outline-primary"
+              target="_blank"
+              rel="noopener noreferrer"
+              href={`${apiURL}/products/pdf`}
+              disabled={loading}
+            >
+              <i className="pi pi-file-pdf me-1"></i>
+              {intl.formatMessage({ id: "product.pdf" })}
+            </a>
               <a onClick={()=> navigate('/products/create')} className="btn btn-primary">
                 <i className="pi pi-plus-circle me-1"></i>{intl.formatMessage({id: "product.newProduct"})}
               </a>
@@ -440,6 +457,7 @@ const ProductScreen = () => {
             </table>
           </div>
         </div>
+
 
         {/* Pagination */}
         {pagination.last_page > 1 && (

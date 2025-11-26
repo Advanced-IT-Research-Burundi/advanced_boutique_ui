@@ -65,7 +65,7 @@ const ProductPdf = () => {
         </thead>
         <tbody>
         {
-                data && data.products && Object.entries(data.products).map(([categoryId, categoryProducts]) => {
+                data && data.products && Object.entries(data.products)?.map(([categoryId, categoryProducts]) => {
                  const category = categoryId|| 'Sans catégorie';
                 return (
                   <React.Fragment key={categoryId}>
@@ -74,7 +74,7 @@ const ProductPdf = () => {
                       {category}
                     </td>
                         </tr>
-                         {categoryProducts.map((product) => {
+                         {categoryProducts && categoryProducts.length && categoryProducts.map((product) => {
                     rowCount++;
                     return (
                       <tr 

@@ -15,7 +15,7 @@ import { useIntl } from "react-intl"
 
 const Header = ({ onSidebarToggle, pageTitle = 'Tableau de bord' }) => {
   const { user, logout, isLoading, getUserInfo } = useAuth();
-  const { getTotalQuantity } = useCart();
+  const { getTotalQuantity } = useCart();  
   const userMenuRef = useRef(null);
   const notificationMenuRef = useRef(null);
   const [isUserMenuOpen, setIsUserMenuOpen] = React.useState(false);

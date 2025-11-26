@@ -9,12 +9,8 @@ const ProductPdf = () => {
     const dispatch = useDispatch();
     
     useEffect(() => {
-        initData();
-    }, []);
-    
-    async function initData() {
-        await dispatch(fetchApiData({ url: "/api/product/pdf", itemKey: 'products' }));
-    }
+        dispatch(fetchApiData({ url: "/api/product/pdf", itemKey: 'products' }));
+    },[]);
     
     const formatNumber = (value) => {
         const num = parseFloat(value.replace(/,/g, ''));
@@ -88,10 +84,10 @@ const ProductPdf = () => {
                         <td>{product.code}</td>
                         <td>{product.name}</td>
                         <td className="text-right">
-                          {formatNumber(product.sale_price_ht)}
+                          {  product?.sale_price_ht}
                         </td>
                         <td className="text-right">
-                          {formatNumber(product.sale_price_ttc)}
+                          {  product?.sale_price_ttc}
                         </td>
                       </tr>
                     );

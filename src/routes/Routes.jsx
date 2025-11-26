@@ -106,6 +106,7 @@ import ReportAnnuelScreen from '../pages/reports/ReportAnnuelScreen.jsx';
 import CommandesEditScreen from '../pages/imports/CommandesEditScreen.jsx';
 import BonEntreScreen from '../pages/imports/BonEntreScreen.jsx';
 import BonEntreShowScreen from '../pages/imports/BonEntreShowScreen.jsx';
+import ProductPdf from '../pages/products/ProductPdf.jsx';
 
 // Composant pour les routes protégées
 const ProtectedRoute = ({ children }) => {
@@ -142,6 +143,7 @@ const protectedRoutes = [
   { path: '/localsales/:id/edit', component: LocalSalesEditScreen},
   //proforma
   { path: '/proforma',component : ProformaScreen},
+  { path: '/product/pdf',component : ProductPdf},
   { path: '/proforma/create', component: ProformaCreateScreen },
   { path: '/proforma/:id', component: ProformaShowScreen },
   { path: '/proforma/:id/edit', component: ProformaEditScreen },

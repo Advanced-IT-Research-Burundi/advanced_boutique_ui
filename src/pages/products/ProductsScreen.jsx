@@ -216,14 +216,14 @@ const ProductScreen = () => {
               {/* Genenere un pdf boutton */}
               <a
               className="btn btn-outline-primary"
-              target="_blank"
               rel="noopener noreferrer"
-              href={`${apiURL}/api/product/pdf`}
+               onClick={()=> navigate('/product/pdf')}
               disabled={loading}
             >
               <i className="pi pi-file-pdf me-1"></i>
               {intl.formatMessage({ id: "product.pdf" })}
-            </a>
+              </a>
+             
               <a onClick={()=> navigate('/products/create')} className="btn btn-primary">
                 <i className="pi pi-plus-circle me-1"></i>{intl.formatMessage({id: "product.newProduct"})}
               </a>

@@ -39,8 +39,6 @@ const textCenter = {
     textAlign: 'center',
 }
 
-
-
 function BonEntreShowScreen() {
     const { id } = useParams();
     const itemKey = 'commande'+id;
@@ -71,6 +69,12 @@ function BonEntreShowScreen() {
 
     const totalRevient = data?.details?.reduce((total, detail) => total + detail?.total_price_v, 0);
     const totalBenefice = totalRevient - totalDepense;
+
+    const detailsData = data?.details?.map((detail) => ({
+        ...detail,
+        total_price_v: detail?.total_price_v * exchangeRate,
+        total_price_a: detail?.total_price_a * exchangeRate,
+    }))
     
     
     return (
@@ -112,7 +116,7 @@ function BonEntreShowScreen() {
                             <tr>
                                 
                             </tr>
-                           {data?.details?.map((item, index) => (
+                           { detailsData && detailsData?.map((item, index) => (
                                <tr key={index}>
                                    <td style={textLeft}>{item?.product_code}</td>
                                    <td style={textLeft}>{item?.item_name}</td>
@@ -120,7 +124,7 @@ function BonEntreShowScreen() {
                                    <td style={textCenter}>{exchangeRate}</td>
                                    <td style={textCenter}>{item?.quantity}</td>
                                    <td style={textCenter}>{item?.price}</td>
-                                   <td style={textCenter}>{item?.total_price}</td>
+                                   <td style={textCenter}>{item?.total_price_a}</td>
                                    <td style={textCenter}>{item?.total_price_v}</td>
                                </tr>
                            ))}

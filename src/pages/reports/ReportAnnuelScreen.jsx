@@ -106,7 +106,7 @@ function ReportAnnuelScreen() {
         }
         
         .total-row {
-            background-color: #2d3748 !important;
+            background-color: #266de7ff !important;
             color: white !important;
             font-weight: bold;
         }
@@ -204,62 +204,45 @@ function ReportAnnuelScreen() {
                             <th>Assurance</th>
                             <th>Imprévu</th>
                             <th>BBN</th>
-                            <th>Imprévu</th>
-                            <th>BBN</th>
                             <th>Déchargement</th>
                             <th>Palette</th>
                         </tr>
                     </thead>
 
                     <tbody>
-                        {data?.map((item, index) => (
-                            <tr key={item.id}>
-                                <td>{formatDate(item.date)}</td>
-                                <td>{item.numero}</td>
-                                <td>{formatNumber(item.fournisseur)}</td>
-                                <td style={{ textAlign: 'right' }}>{ formatNumber(item.transport)}</td>
-                                <td style={{ textAlign: 'right' }}>{formatNumber(item.douane)}</td>
-                                <td style={{ textAlign: 'right' }}>{formatNumber(item.licence)}</td>
-                                <td style={{ textAlign: 'right' }}>{formatNumber(item.assurance)}</td>
-                                <td style={{ textAlign: 'right' }}>{formatNumber(item.imprevu)}</td>
-                                <td style={{ textAlign: 'right' }}>{formatNumber(item.bbn)}</td>
-                                <td style={{ textAlign: 'right' }}>{formatNumber(item.imprevu)}</td>
-                                <td style={{ textAlign: 'right' }}>{formatNumber(item.bbn)}</td>
-                                <td style={{ textAlign: 'right' }}>{formatNumber(item.dechargement)}</td>
-                                <td style={{ textAlign: 'right' }}>{formatNumber(item.palette)}</td>
+
+                        {data?.rows?.map((row, index) => (
+                            <tr key={index}>
+                                <td>{row.date}</td>
+                                <td>{row.numero}</td>
+                                <td>{formatNumber(row.fournisseur)}</td>
+                                <td>{formatNumber(row.transport)}</td>
+                                <td>{formatNumber(row.dedouanement)}</td>
+                                <td>{formatNumber(row.licence)}</td>
+                                <td>{formatNumber(row.assurance)}</td>
+                                <td>{formatNumber(row.imprevu)}</td>
+                                <td>{formatNumber(row.bbn)}</td>
+                                <td>{formatNumber(row.dechargement)}</td>
+                                <td>{formatNumber(row.palettes)}</td>
                             </tr>
                         ))}
-                        <tr className="total-row">
-                            <th colSpan="3" style={{ textAlign: 'center', fontWeight: 'bold' }}>
-                                TOTAL GÉNÉRAL
-                            </th>
-                            <th style={{ textAlign: 'right' }}>
-                                {formatNumber(data?.reduce((sum, item) => sum + (parseFloat(item.transport) || 0), 0).toFixed(2))}
-                            </th>
-                            <th style={{ textAlign: 'right' }}>
-                                {formatNumber(data?.reduce((sum, item) => sum + (parseFloat(item.douane) || 0), 0).toFixed(2))}
-                            </th>
-                            <th style={{ textAlign: 'right' }}>
-                                {formatNumber(data?.reduce((sum, item) => sum + (parseFloat(item.licence) || 0), 0).toFixed(2))}
-                            </th>
-                            <th style={{ textAlign: 'right' }}>
-                                {formatNumber(data?.reduce((sum, item) => sum + (parseFloat(item.assurance) || 0), 0).toFixed(2))}
-                            </th>
-                            <th style={{ textAlign: 'right' }}>
-                                {formatNumber(data?.reduce((sum, item) => sum + (parseFloat(item.imprevu) || 0), 0).toFixed(2))}
-                            </th>
-                            <th style={{ textAlign: 'right' }}>
-                                {formatNumber(data?.reduce((sum, item) => sum + (parseFloat(item.bbn) || 0), 0).toFixed(2))}
-                            </th>
-                            <th style={{ textAlign: 'right' }}>-</th>
-                            <th style={{ textAlign: 'right' }}>-</th>
-                            <th style={{ textAlign: 'right' }}>
-                                {formatNumber(data?.reduce((sum, item) => sum + (parseFloat(item.dechargement) || 0), 0).toFixed(2))}
-                            </th>
-                            <th style={{ textAlign: 'right' }}>
-                                {formatNumber(data?.reduce((sum, item) => sum + (parseFloat(item.palette) || 0), 0).toFixed(2))}
-                            </th>
-                        </tr>
+                        {data?.totals && (
+                            <tr className="total-row">
+                                <td>{data?.totals.date}</td>
+                                <td></td>
+                                <td>{formatNumber(data?.totals.fournisseur)}</td>
+                                <td>{formatNumber(data?.totals.transport)}</td>
+                                <td>{formatNumber(data?.totals.dedouanement)}</td>
+                                <td>{formatNumber(data?.totals.licence)}</td>
+                                <td>{formatNumber(data.totals.assurance)}</td>
+                                <td>{formatNumber(data.totals.imprevu)}</td>
+                                <td>{formatNumber(data.totals.bbn)}</td>
+                                <td>{formatNumber(data.totals.dechargement)}</td>
+                                <td>{formatNumber(data.totals.palettes)}</td>
+                            </tr>
+                        )}
+                        
+                        
                     </tbody>
                 </table>
             </div>

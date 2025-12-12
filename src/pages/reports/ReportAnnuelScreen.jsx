@@ -227,18 +227,18 @@ function ReportAnnuelScreen() {
                             </tr>
                         ))}
                         {data?.totals && (
-                            <tr className="total-row">
-                                <td>{data?.totals.date}</td>
-                                <td></td>
-                                <td>{formatNumber(data?.totals.fournisseur)}</td>
-                                <td>{formatNumber(data?.totals.transport)}</td>
-                                <td>{formatNumber(data?.totals.dedouanement)}</td>
-                                <td>{formatNumber(data?.totals.licence)}</td>
-                                <td>{formatNumber(data.totals.assurance)}</td>
-                                <td>{formatNumber(data.totals.imprevu)}</td>
-                                <td>{formatNumber(data.totals.bbn)}</td>
-                                <td>{formatNumber(data.totals.dechargement)}</td>
-                                <td>{formatNumber(data.totals.palettes)}</td>
+                            <tr >
+                                <th>{data?.totals.date}</th>
+                                <th></th>
+                                <th>{formatNumber(data?.totals.fournisseur)}</th>
+                                <th>{formatNumber(data?.totals.transport)}</th>
+                                <th>{formatNumber(data?.totals.dedouanement)}</th>
+                                <th>{formatNumber(data?.totals.licence)}</th>
+                                <th>{formatNumber(data.totals.assurance)}</th>
+                                <th>{formatNumber(data.totals.imprevu)}</th>
+                                <th>{formatNumber(data.totals.bbn)}</th>
+                                <th>{formatNumber(data.totals.dechargement)}</th>
+                                <th>{formatNumber(data.totals.palettes)}</th>
                             </tr>
                         )}
                         

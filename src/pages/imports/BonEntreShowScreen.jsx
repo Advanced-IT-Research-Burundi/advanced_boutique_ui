@@ -32,6 +32,7 @@ const textLeft = {
 const textRight = {
     ...tdStyle,
     textAlign: 'right',
+    
 }
 
 const textCenter = {
@@ -64,18 +65,17 @@ function BonEntreShowScreen() {
         }));
     }
     
-    const totalDepense = data?.depenses?.reduce((total, depense) => total + depense?.amount, 0);
-    const exchangeRate = data?.exchange_rate;
+    const totalDepense = data?.depenses?.reduce((total, depense) => total + (Number(depense?.amount) || 0), 0) || 0;
+    const exchangeRate = Number(data?.exchange_rate) || 1;
 
-    const totalRevient = data?.details?.reduce((total, detail) => total + detail?.total_price_v, 0);
-    const totalBenefice = totalRevient - totalDepense;
-
-    const detailsData = data?.details?.map((detail) => ({
-        ...detail,
-        total_price_v: detail?.total_price_v * exchangeRate,
-        total_price_a: detail?.total_price_a * exchangeRate,
-    }))
+    const detailsData = data?.details;
     
+    // TOTAL PRIX D'ACHAT
+    const totalPrixAchat = detailsData?.reduce((total, detail) => total + (Number(detail?.total_pa) || 0), 0) || 0;
+    const totalPrixAchatV = detailsData?.reduce((total, detail) => total + (Number(detail?.total_pv) || 0), 0) || 0;
+
+    const totalRevient = (totalPrixAchat * exchangeRate) + totalDepense;
+    const totalBenefice = totalPrixAchatV - totalRevient;
     
     return (
         <div>
@@ -95,7 +95,7 @@ function BonEntreShowScreen() {
         
         <div>
         <h4 style={{textAlign: 'center'}}>
-            BON D'ENTREE N° { (data?.id + "").padStart(4, "0")}/{data?.created_at.split('T')[0].split('-')[0]}</h4>
+            BON D'ENTREE N° { (data?.id + "").padStart(4, "0")}/{data?.created_at?.split('T')[0].split('-')[0]}</h4>
                 </div>
                 
                 <div>
@@ -118,26 +118,21 @@ function BonEntreShowScreen() {
                             </tr>
                            { detailsData && detailsData?.map((item, index) => (
                                <tr key={index}>
-                                   <td style={textLeft}>{item?.product_code}</td>
-                                   <td style={textLeft}>{item?.item_name}</td>
-                                   <td style={textCenter}>{item?.pu}</td>
-                                   <td style={textCenter}>{exchangeRate}</td>
-                                   <td style={textCenter}>{item?.quantity}</td>
-                                   <td style={textCenter}>{item?.price}</td>
-                                   <td style={textCenter}>{item?.total_price_a}</td>
-                                   <td style={textCenter}>{item?.total_price_v}</td>
+                                   <td style={textLeft}>{item?.code}</td>
+                                   <td style={textLeft}>{item?.libelle}</td>
+                                   <td style={textRight}>{formatNumber(item?.pu)}</td>
+                                   <td style={textRight}>{formatNumber(item?.cours || exchangeRate)}</td>
+                                   <td style={textRight}>{formatNumber(item?.qte)}</td>
+                                   <td style={textRight}>{formatNumber(item?.prix_vente)}</td>
+                                   <td style={textRight}>{formatNumber(item?.total_pa)}</td>
+                                   <td style={textRight}>{formatNumber(item?.total_pv)}</td>
                                </tr>
                            ))}
                           
                             <tr>
-                                <th  colSpan={6}></th>
-                                <td style={textCenter}>{formatNumber(data?.total_price)}</td>
-                                <td style={textCenter}>{formatNumber(data?.total_price_v)}</td>
-                            </tr>
-                            <tr>
                                 <th  colSpan={6}>Total</th>
-                                <td style={textCenter}>{formatNumber(data?.total_price)}</td>
-                                <td style={textCenter}>{formatNumber(data?.total_price_v)}</td>
+                                <td style={textCenter}>{formatNumber(totalPrixAchat)}</td>
+                                <td style={textCenter}>{formatNumber(totalPrixAchatV)}</td>
                             </tr>
                     
                         </tbody>
@@ -154,8 +149,8 @@ function BonEntreShowScreen() {
                          
                             {data?.depenses?.map((item, index) => (
                                 <tr key={index}>
-                                    <td style={textLeft} >{item?.name_depense_importation_type}</td>
-                                    <td style={textRight}>{item?.amount}</td>
+                                    <td style={textLeft} >{item?.libelle}</td>
+                                    <td style={textRight}>{formatNumber(item?.amount)}</td>
                                 </tr>
                             ))}
                             <tr>
@@ -171,15 +166,15 @@ function BonEntreShowScreen() {
                            
                             <tr>
                                 <th>PRIX DE REVIENT TOTAL</th>
-                                <td style={textRight}>{formatNumber(data?.total_price_v + totalDepense)}</td>
+                                <td style={textRight}>{formatNumber(totalRevient)}</td>
                             </tr>
                             <tr>
                                 <th>PRIX DE VENTE TOTAL</th>
-                                <td style={textRight}>{formatNumber(data?.total_price_v + totalDepense)}</td>
+                                <td style={textRight}>{formatNumber(totalPrixAchatV)}</td>
                             </tr>
                             <tr>
                                 <th>BENEFICE</th>
-                                <td style={textRight}>{formatNumber(data?.total_price_v + totalDepense)}</td>
+                                <td style={textRight}>{formatNumber(totalPrixAchatV - totalRevient)}</td>
                             </tr>
                     </table>
                 </div>

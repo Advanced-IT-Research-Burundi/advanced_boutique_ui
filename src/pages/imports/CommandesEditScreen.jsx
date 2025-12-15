@@ -128,15 +128,17 @@ const EditCommandeScreen = () => {
       setOrderDetails({
         commentaire: order.commentaire || '',
         numCommande: order.numCommande || '',
-        exchange_rate: order.exchange_rate || ''
+        exchange_rate: order.exchange_rate || '',
+        vehicle_id: order.vehicle_id || '',
+        vehicle: order.vehicle || null,
       });
       
       // Set cart with order details (products)
       if (order.details) {
         setCart(order.details.map(detail => ({
           id: detail.id,
-          product_code: detail.code,
-          item_name: detail.libelle,
+          product_code: detail.product_code,
+          item_name: detail.item_name,
           company_code: detail.company_code,
           weight_kg: detail.weight_kg,
           quantity: detail.quantity || 1,
@@ -212,6 +214,7 @@ const EditCommandeScreen = () => {
   };
 
   const updateCartItem = (id, field, value) => {
+    console.log('Updating cart item:', id, field, value);
     setCart(prev => prev.map(p => 
       p.id === id ? { ...p, [field]: parseFloat(value) || 0 } : p
     ));

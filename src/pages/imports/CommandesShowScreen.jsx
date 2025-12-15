@@ -99,7 +99,7 @@ function CommandesShowScreen() {
                       <tbody>
                           {data?.details?.map((item, index) => (
                               <tr key={index}>
-                                  <td  style={textLeft}>{item?.code}</td>
+                                  <td  style={textLeft}>{item?.company_code}</td>
                                   <td  style={textLeft}>{item?.libelle}</td>
                                   <td  style={textCenter}>{item?.qte}</td>
                                   <td  style={textCenter}>{item?.weight_kg}</td>

@@ -135,8 +135,8 @@ const EditCommandeScreen = () => {
       if (order.details) {
         setCart(order.details.map(detail => ({
           id: detail.id,
-          product_code: detail.product_code,
-          item_name: detail.item_name,
+          product_code: detail.code,
+          item_name: detail.libelle,
           company_code: detail.company_code,
           weight_kg: detail.weight_kg,
           quantity: detail.quantity || 1,

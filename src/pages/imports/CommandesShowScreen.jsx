@@ -43,8 +43,6 @@ function CommandesShowScreen() {
     const { data } = useSelector(state => ({
         data: state.apiData?.data[itemKey]
     }));
-    
-
     useEffect(() => {
         dispatch(fetchApiData({
             url: `${API_CONFIG.ENDPOINTS.COMMANDES}/${id}`,
@@ -101,9 +99,9 @@ function CommandesShowScreen() {
                       <tbody>
                           {data?.details?.map((item, index) => (
                               <tr key={index}>
-                                  <td  style={textLeft}>{item?.company_code}</td>
-                                  <td  style={textLeft}>{item?.item_name}</td>
-                                  <td  style={textCenter}>{item?.quantity}</td>
+                                  <td  style={textLeft}>{item?.code}</td>
+                                  <td  style={textLeft}>{item?.libelle}</td>
+                                  <td  style={textCenter}>{item?.qte}</td>
                                   <td  style={textCenter}>{item?.weight_kg}</td>
                                   <td  style={{... tdStyle, textAlign: 'right', paddingRight: '20px'}}>{    formatNumber(item?.total_weight)}</td>
                               </tr>

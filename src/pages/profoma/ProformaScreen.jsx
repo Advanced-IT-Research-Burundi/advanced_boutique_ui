@@ -42,15 +42,15 @@ const ProformaScreen = () => {
   }, []);
   
   useEffect(() => {
-    if(data){
+    if (data) {
       setProformas(data?.proformas?.data || []);
       setStats(data?.stats || {});
       setPagination({
-        current_page: data?.current_page,
-        last_page: data?.last_page,
-        total: data?.total,
-        from: data?.from,
-        to: data?.to
+        current_page: data?.proformas?.current_page,
+        last_page: data?.proformas?.last_page,
+        total: data?.proformas?.total,
+        from: data?.proformas?.from,
+        to: data?.proformas?.to
       });
     }
   }, [data]);

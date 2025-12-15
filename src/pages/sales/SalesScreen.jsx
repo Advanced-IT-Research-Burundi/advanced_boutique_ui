@@ -484,6 +484,8 @@ const SalesScreen = () => {
           </div>
         </div>
 
+       
+
         {/* Pagination */}
         {pagination.last_page > 1 && (
           <div className="card-footer bg-transparent border-0">

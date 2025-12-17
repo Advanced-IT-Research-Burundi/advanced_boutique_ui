@@ -137,13 +137,14 @@ const EditCommandeScreen = () => {
       if (order.details) {
         setCart(order.details.map(detail => ({
           id: detail.id,
-          product_code: detail.product_code,
-          item_name: detail.item_name,
+          product_code: detail.code,
+          item_name: detail.libelle,
           company_code: detail.company_code,
           weight_kg: detail.weight_kg,
           quantity: detail.quantity || 1,
           pu: detail.pu || 0,
-          remise: detail.remise || 0
+          remise: detail.remise || 0,
+          lion: "detail.remise || 0",
         })));
       }
       
@@ -245,7 +246,7 @@ const EditCommandeScreen = () => {
         exchange_rate: orderDetails.exchange_rate,
         details: cart.map(item => ({
           product_code: item.product_code,
-          item_name: item.item_name,
+          item_name: item.libelle,
           company_code: item.company_code,
           quantity: item.quantity,
 

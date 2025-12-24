@@ -127,13 +127,11 @@ const EditCommandeScreen = () => {
 
       // Set the vehicle from order data
       if (order.vehicule) {
-        console.log('Selected vehicle from order.vehicule:', order.vehicule);
         setSelectedVehicle(order.vehicule);
       } else if (order.vehicule_id && vehicles.length > 0) {        
         const vehicle = vehicles.find(
           v => v.id === Number(order.vehicule_id)
         );
-        // console.log('Selected vehicle from order.vehicule_id:', vehicle);
         setSelectedVehicle(vehicle);
       }
 

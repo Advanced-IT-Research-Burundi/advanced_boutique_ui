@@ -38,6 +38,7 @@ export const API_CONFIG = {
     DEPENSES_IMPORTATION_MODEL: '/api/depenses-importations',
     BON_ENTRE: '/api/bon-entree',
     UNITS: '/api/units',
+    CREDIT_TVA_DETAILS: '/api/credit-tva-details',
   },
   HEADERS: {
     'Content-Type': 'application/json',

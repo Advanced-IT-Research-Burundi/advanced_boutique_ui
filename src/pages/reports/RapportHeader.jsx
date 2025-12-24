@@ -15,6 +15,13 @@ function RapportHeader() {
                               <span>Rapports des depenses Annuelles</span>
                           </a>
                       </li>
+                      <li className="nav-item">
+                          <a className="nav-link" href="#" onClick={
+                              () => navigate('/reports/credit-tva')}>
+                              <i className="pi pi-chart-bar"></i>
+                              <span>Enregistrement crédits TVA</span>
+                          </a>
+                      </li>
                   </ul>
               </div>
           </div>

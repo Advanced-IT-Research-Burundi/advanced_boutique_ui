@@ -107,6 +107,7 @@ import CommandesEditScreen from '../pages/imports/CommandesEditScreen.jsx';
 import BonEntreScreen from '../pages/imports/BonEntreScreen.jsx';
 import BonEntreShowScreen from '../pages/imports/BonEntreShowScreen.jsx';
 import ProductPdf from '../pages/products/ProductPdf.jsx';
+import ReportCreditTvaScreen from '../pages/reports/ReportCreditTvaScreen.jsx';
 
 // Composant pour les routes protégées
 const ProtectedRoute = ({ children }) => {
@@ -214,6 +215,7 @@ const protectedRoutes = [
   { path: '/expense-types/:id/edit', component: ExpenseTypeEditScreen },
   { path: '/reports', component: ReportsScreen },
   { path: '/reports/financial', component: ReportAnnuelScreen },
+  { path: '/reports/credit-tva', component: ReportCreditTvaScreen },
   { path: '/profile', component: ProfileScreen },
   //imports
   { path: '/imports', component: ImportsScreen},

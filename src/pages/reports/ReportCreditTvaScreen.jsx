@@ -118,7 +118,7 @@ function ReportCreditTvaScreen() {
                 {/* Header Stats */}
                <div className="row mb-4">
                     <div className="col-12">
-                        <div className="card shadow-sm border-0 bg-primary text-white">
+                        <div className="card shadow-sm border-0 text-white" style={{ backgroundColor: 'var(--primary-blue)' }}>
                             <div className="card-body d-flex justify-content-between align-items-center">
                                 <div>
                                     <h5 className="mb-0">Total Crédit TVA</h5>
@@ -147,7 +147,7 @@ function ReportCreditTvaScreen() {
                             </div>
                             <div className="col-md-6 text-md-end">
                                 <button className="btn btn-primary" onClick={() => openModal()}>
-                                    <i className="fa fa-plus me-2"></i> Ajouter
+                                    <i className="bi bi-plus-lg me-2"></i> Ajouter
                                 </button>
                             </div>
                         </div>
@@ -169,11 +169,7 @@ function ReportCreditTvaScreen() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {loading ? (
-                                        <tr>
-                                            <td colspan="5" className="text-center py-4">Chargement...</td>
-                                        </tr>
-                                    ) : creditTvaDetails.data && creditTvaDetails.data.length > 0 ? (
+                                    { creditTvaDetails.data && creditTvaDetails.data.length > 0 ? (
                                         creditTvaDetails.data.map((item) => (
                                             <tr key={item.id}>
                                                 <td className="ps-4">{item.date}</td>
@@ -191,13 +187,15 @@ function ReportCreditTvaScreen() {
                                                         className="btn btn-sm btn-outline-secondary me-2"
                                                         onClick={() => openModal(item)}
                                                     >
-                                                        <i className="fa fa-edit"></i>
+                                                        Modifier
+                                                        <i className="pi pi-pencil"></i>
                                                     </button>
                                                     <button 
                                                         className="btn btn-sm btn-outline-danger"
                                                         onClick={() => handleDelete(item.id)}
                                                     >
-                                                        <i className="fa fa-trash"></i>
+                                                        Supprimer
+                                                        <i className="pi pi-trash"></i>
                                                     </button>
                                                 </td>
                                             </tr>

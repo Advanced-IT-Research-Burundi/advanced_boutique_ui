@@ -405,7 +405,7 @@ const SalesScreen = () => {
                             <i className="pi pi-tag text-primary"></i>
                           </div>
                           <div>
-                            <strong className="text-primary">#{sale.id.toString().padStart(6, '0')}</strong>
+                            <strong className="text-primary">{sale.numero}</strong>
                             <br />
                             <small className="text-muted">
                               {new Date(sale.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}

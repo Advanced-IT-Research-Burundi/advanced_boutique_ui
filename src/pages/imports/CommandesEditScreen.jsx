@@ -82,6 +82,7 @@ const EditCommandeScreen = () => {
       );
       setVehicles(availableVehicles);
     }
+    loadOrderById(id);
   }, [data?.vehicles]);
 
   const updateLoadingState = (key, value) => {
@@ -123,6 +124,17 @@ const EditCommandeScreen = () => {
     try {
       const response = await ApiService.get(`${API_CONFIG.ENDPOINTS.COMMANDES}/${orderId}`);
       const order = response.data;
+
+      // Set the vehicle from order data
+      if (order.vehicule) {
+        setSelectedVehicle(order.vehicule);
+      } else if (order.vehicule_id && vehicles.length > 0) {        
+        const vehicle = vehicles.find(
+          v => v.id === Number(order.vehicule_id)
+        );
+        setSelectedVehicle(vehicle);
+      }
+
       
       setSelectedOrder(order);
       setOrderDetails({
@@ -146,15 +158,8 @@ const EditCommandeScreen = () => {
           remise: detail.remise || 0,
           lion: "detail.remise || 0",
         })));
-      }
+      }      
       
-      // Set the vehicle from order data
-      if (order.vehicule) {
-        setSelectedVehicle(order.vehicule);
-      } else if (order.vehicule_id && vehicles.length > 0) {
-        const vehicle = vehicles.find(v => v.id === order.vehicule_id);
-        setSelectedVehicle(vehicle);
-      }
       
     } catch (error) {
       showToast('error', 'Erreur lors du chargement de la commande');

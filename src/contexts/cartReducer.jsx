@@ -31,13 +31,15 @@ const cartReducer = (state, action) => {
           items: updatedItems
         };
       } else {
+        const tva = Number(((product.sale_price_ttc - product.sale_price_ht) || 0).toFixed(2));
         const newItem = {
           product_id: product.id,
           name: product.name,
           code: product.code,
           quantity: 1,
           sale_price: product.sale_price_ttc || 0,
-          discount: 0, 
+          discount: 0,
+          tva: tva,
           discount_fbu: 0, 
           unit: product.unit,
           available_stock: product.quantity_disponible || 0,
@@ -166,6 +168,7 @@ export const CartProvider = ({ children }) => {
   
   const calculateTotals = React.useMemo(() => {
     let subtotal = 0;
+    let totalTVA = 0;
     let totalDiscount = 0;
 
     state.items.forEach(item => {
@@ -176,6 +179,8 @@ export const CartProvider = ({ children }) => {
       const discountFBU = parseFloat(item.discount_fbu) || 0; 
 
       const itemSubtotal = quantity * price;
+      const itemTVA = (item.tva || 0);
+      totalTVA += itemTVA;
       
       
       const percentDiscountAmount = (itemSubtotal * discountPercent) / 100; 
@@ -190,6 +195,7 @@ export const CartProvider = ({ children }) => {
 
     return {
       subtotal,
+      totalTVA,
       totalDiscount,
       totalAmount,
       itemsCount: state.items.length

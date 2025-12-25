@@ -21,6 +21,8 @@ const LocalSalesCreateScreen = () => {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  console.log("Items dans le panier:", items);
+
   // Client
   const [clientSearch, setClientSearch] = useState("");
   const [selectedClient, setSelectedClient] = useState(null);
@@ -236,6 +238,7 @@ const LocalSalesCreateScreen = () => {
         paid_amount: parseFloat(paidAmount) || 0,
         total_amount: totals.totalAmount,
         note: note,
+        total_tva: totals.totalTVA,
         invoice_type: invoiceType,
         items: items.map((item) => ({
           product_id: item.product_id,
@@ -916,12 +919,15 @@ const LocalSalesCreateScreen = () => {
                                 >
                                   {formatCurrency(finalAmount)}
                                 </span>
+                                 <span className="small text-info">
+                                      Tva : {item.tva}
+                                    </span>
                                 {discountFBUPerUnit > 0 && (
                                   <div className="text-center">
                                     <small className="text-muted text-decoration-line-through d-block">
                                       {formatCurrency(subtotal)}
                                     </small>
-                                    
+                                   
                                   </div>
                                 )}
                               </div>
@@ -970,6 +976,12 @@ const LocalSalesCreateScreen = () => {
                       <span className="small">Sous-total:</span>
                       <span className="fw-semibold">
                         {formatCurrency(totals.subtotal)}
+                      </span>
+                    </div>
+                    <div className="d-flex justify-content-between mb-2">
+                      <span className="small">Total TVA:</span>
+                      <span className="fw-semibold text-info">
+                        {formatCurrency(totals.totalTVA)}
                       </span>
                     </div>
                     {totals.totalDiscount > 0 && (

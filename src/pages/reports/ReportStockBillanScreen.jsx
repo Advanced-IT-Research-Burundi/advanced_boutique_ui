@@ -1,11 +1,13 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import RapportHeader from './RapportHeader'
 import { useDispatch, useSelector } from 'react-redux'
 import { fetchApiData } from '../../stores/slicer/apiDataSlicer';
+import { MultiSelect } from 'primereact/multiselect';
 
 function ReportStockBillanScreen() {
     const dispatch = useDispatch();
     const { data, loading } = useSelector((state) => state.apiData);
+    const [selectedStocks, setSelectedStocks] = useState(null);
 
     useEffect(() => {
         dispatch(fetchApiData({
@@ -15,7 +17,13 @@ function ReportStockBillanScreen() {
     }, [dispatch]);
 
     const stockData = data?.STOCK_BILLAN?.stock_produits || [];
-    const totalGlobal = stockData.reduce((acc, item) => acc + (parseFloat(item.total_value) || 0), 0);
+    
+    // Filter data based on selection
+    const filteredStockData = selectedStocks && selectedStocks.length > 0 
+        ? stockData.filter(stock => selectedStocks.some(s => s.stock_id === stock.stock_id))
+        : stockData;
+
+    const totalGlobal = filteredStockData.reduce((acc, item) => acc + (parseFloat(item.total_value) || 0), 0);
 
     const formatCurrency = (amount) => {
         return new Intl.NumberFormat('fr-BI', { 
@@ -32,14 +40,32 @@ function ReportStockBillanScreen() {
             
             <div className="card shadow-sm border-0 mt-4">
                 <div className="card-header bg-white py-3 border-bottom">
-                    <div className="d-flex justify-content-between align-items-center">
+                    <div className="d-flex flex-wrap justify-content-between align-items-center gap-3">
                         <h5 className="mb-0 text-success fw-bold">
                             <i className="pi pi-box me-2"></i>
                             Bilan global des Stocks
                         </h5>
-                        <span className="badge bg-success bg-opacity-10 text-success fs-6 px-3 py-2">
-                             Total: {formatCurrency(totalGlobal)}
-                        </span>
+                        <div className="d-flex align-items-center gap-3">
+                            <div className="p-inputgroup">
+                                <span className="p-inputgroup-addon bg-light border-end-0">
+                                    <i className="pi pi-filter text-muted"></i>
+                                </span>
+                                <MultiSelect 
+                                    value={selectedStocks}
+                                    options={stockData} 
+                                    onChange={(e) => setSelectedStocks(e.value)} 
+                                    optionLabel="stock_name" 
+                                    placeholder="Filtrer par stock"
+                                    maxSelectedLabels={2}
+                                    className="w-full md:w-20rem border-start-0"
+                                    display="chip"
+                                    filter
+                                />
+                            </div>
+                            <span className="badge bg-success bg-opacity-10 text-success fs-6 px-3 py-2">
+                                 Total: {formatCurrency(totalGlobal)}
+                            </span>
+                        </div>
                     </div>
                 </div>
                 <div className="card-body p-0">
@@ -61,8 +87,8 @@ function ReportStockBillanScreen() {
                                             </div>
                                         </td>
                                     </tr>
-                                ) : stockData.length > 0 ? (
-                                    stockData.map((stock, index) => (
+                                ) : filteredStockData.length > 0 ? (
+                                    filteredStockData.map((stock, index) => (
                                         <tr key={stock.stock_id || index}>
                                             <td className="ps-4 text-muted">#{stock.stock_id}</td>
                                             <td className="fw-medium text-dark">{stock.stock_name}</td>
@@ -74,22 +100,22 @@ function ReportStockBillanScreen() {
                                 ) : (
                                     <tr>
                                         <td colSpan="3" className="text-center py-5 text-muted">
-                                            <i className="pi pi-info-circle fs-3 d-block mb-2"></i>
-                                            Aucune donnée de stock disponible
+                                            <div className="d-flex flex-column align-items-center">
+                                                <i className="pi pi-search fs-3 mb-2 opacity-50"></i>
+                                                <span>Aucun stock trouvé pour cette sélection</span>
+                                            </div>
                                         </td>
                                     </tr>
                                 )}
                             </tbody>
-                            {stockData.length > 0 && (
-                                <tfoot className="bg-light">
-                                    <tr>
-                                        <td colSpan="2" className="text-end fw-bold py-3">TOTAL GÉNÉRAL</td>
-                                        <td className="text-end pe-4 fw-bold text-success fs-5 py-3">
-                                            {formatCurrency(totalGlobal)}
-                                        </td>
-                                    </tr>
-                                </tfoot>
-                            )}
+                            <tfoot className="bg-light">
+                                <tr>
+                                    <td colSpan="2" className="text-end fw-bold py-3">TOTAL GÉNÉRAL</td>
+                                    <td className="text-end pe-4 fw-bold text-success fs-5 py-3">
+                                        {formatCurrency(totalGlobal)}
+                                    </td>
+                                </tr>
+                            </tfoot>
                         </table>
                     </div>
                 </div>

@@ -34,18 +34,49 @@ function ReportStockBillanScreen() {
         }).format(amount);
     };
 
+    const handlePrint = () => {
+        window.print();
+    };
+
+    const printDate = new Date().toLocaleDateString('fr-FR', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+
     return (
         <div className="container-fluid">
-            <RapportHeader />
+            <div className="d-print-none">
+                <RapportHeader />
+            </div>
             
             <div className="card shadow-sm border-0 mt-4">
                 <div className="card-header bg-white py-3 border-bottom">
+                    <div className="d-none d-print-block mb-3">
+                         <div className="text-center mb-4">
+                            <h3 className="fw-bold">UBWIZA BURUNDI</h3>
+                            <p className="text-muted mb-0">Rapport de Bilan des Stocks</p>
+                            <small className="text-muted">Imprimé le : {printDate}</small>
+                        </div>
+                    </div>
+
                     <div className="d-flex flex-wrap justify-content-between align-items-center gap-3">
                         <h5 className="mb-0 text-success fw-bold">
-                            <i className="pi pi-box me-2"></i>
+                            <i className="pi pi-box me-2 d-print-none"></i>
                             Bilan global des Stocks
                         </h5>
-                        <div className="d-flex align-items-center gap-3">
+                        <div className="d-flex align-items-center gap-3 d-print-none">
+                            <button 
+                                className="btn btn-outline-secondary btn-sm d-flex align-items-center gap-2"
+                                onClick={handlePrint}
+                            >
+                                <i className="pi pi-print"></i>
+                                <span>Imprimer</span>
+                            </button>
+
                             <div className="p-inputgroup">
                                 <span className="p-inputgroup-addon bg-light border-end-0">
                                     <i className="pi pi-filter text-muted"></i>
@@ -66,6 +97,9 @@ function ReportStockBillanScreen() {
                                  Total: {formatCurrency(totalGlobal)}
                             </span>
                         </div>
+                        {/* Visible only in print to show the total at the top if needed, 
+                            though it's also in the footer. Let's keep the header clean for print 
+                            except for the title and date. */}
                     </div>
                 </div>
                 <div className="card-body p-0">
@@ -108,15 +142,29 @@ function ReportStockBillanScreen() {
                                     </tr>
                                 )}
                             </tbody>
-                            <tfoot className="bg-light">
-                                <tr>
-                                    <td colSpan="2" className="text-end fw-bold py-3">TOTAL GÉNÉRAL</td>
-                                    <td className="text-end pe-4 fw-bold text-success fs-5 py-3">
-                                        {formatCurrency(totalGlobal)}
-                                    </td>
-                                </tr>
-                            </tfoot>
+                            {filteredStockData.length > 0 && (
+                                <tfoot className="bg-light">
+                                    <tr>
+                                        <td colSpan="2" className="text-end fw-bold py-3">TOTAL GÉNÉRAL</td>
+                                        <td className="text-end pe-4 fw-bold text-success fs-5 py-3">
+                                            {formatCurrency(totalGlobal)}
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            )}
                         </table>
+                    </div>
+                </div>
+            </div>
+            
+            {/* Print Footer with Signature Area if needed */}
+             <div className="d-none d-print-block mt-5 pt-5">
+                <div className="row">
+                    <div className="col-6 text-center">
+                        <p className="fw-bold mb-5 border-top pt-2 d-inline-block" style={{ minWidth: '200px' }}>Signature Responsable Stock</p>
+                    </div>
+                    <div className="col-6 text-center">
+                        <p className="fw-bold mb-5 border-top pt-2 d-inline-block" style={{ minWidth: '200px' }}>Signature Direction</p>
                     </div>
                 </div>
             </div>

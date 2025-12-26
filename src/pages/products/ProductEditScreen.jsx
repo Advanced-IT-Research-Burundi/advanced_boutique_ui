@@ -28,6 +28,7 @@ const ProductEditScreen = () => {
     sale_price_ttc: '',
     unit: '',
     alert_quantity: '',
+    prix_promotionnel: '', // add this to input field
     image: null
   };
 
@@ -423,6 +424,21 @@ const ProductEditScreen = () => {
                         value={calculatedTTC || form.values.sale_price_ttc}
                         readOnly
                         disabled
+                      />
+                    </div>
+
+                    <div className="col-md-4">
+                      <FormField
+                        name="prix_promotionnel"
+                        form={form}
+                        type="number"
+                        label="Prix Promotionnel"
+                        placeholder="0.00"
+                        icon="pi pi-tag"
+                        helperText="Prix en promotion (optionnel)"
+                        step="0.01"
+                        min="0"
+                        disabled={form.loading}
                       />
                     </div>
 

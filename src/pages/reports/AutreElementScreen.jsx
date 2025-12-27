@@ -106,7 +106,6 @@ function AutreElementScreen() {
 
     const handleSubmit = async (e) => {
 
-    
         e.preventDefault();
         
         const dataToSend = new FormData();
@@ -127,10 +126,11 @@ function AutreElementScreen() {
         try {
             let response;
             if (editingItem) {
-                response = await ApiService.post(`/api/autre-elements/${editingItem.id}`, dataToSend, {
+                response = await ApiService.put(`/api/autre-elements/${editingItem.id}`, dataToSend, {
                     headers: { 'Content-Type': 'multipart/form-data' }
                 });
             } else {
+                console.log("dataToSend", dataToSend.values());
                 response = await ApiService.post('/api/autre-elements', dataToSend, {
                     headers: { 'Content-Type': 'multipart/form-data' }
                 });

@@ -109,6 +109,7 @@ import BonEntreShowScreen from '../pages/imports/BonEntreShowScreen.jsx';
 import ProductPdf from '../pages/products/ProductPdf.jsx';
 import ReportCreditTvaScreen from '../pages/reports/ReportCreditTvaScreen.jsx';
 import ReportStockBillanScreen from '../pages/reports/ReportStockBillanScreen.jsx';
+import AutreElementScreen from '../pages/reports/AutreElementScreen.jsx';
 
 // Composant pour les routes protégées
 const ProtectedRoute = ({ children }) => {
@@ -218,6 +219,7 @@ const protectedRoutes = [
   { path: '/reports/financial', component: ReportAnnuelScreen },
   { path: '/reports/stock_billan', component: ReportStockBillanScreen },  
   { path: '/reports/credit-tva', component: ReportCreditTvaScreen },
+  { path: '/reports/autres_elements', component: AutreElementScreen },
   { path: '/profile', component: ProfileScreen },
   //imports
   { path: '/imports', component: ImportsScreen},

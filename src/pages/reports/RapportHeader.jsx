@@ -9,6 +9,7 @@ function RapportHeader() {
         { path: '/reports/financial', label: 'Rapports des depenses Annuelles', icon: 'pi pi-chart-line' },
         { path: '/reports/credit-tva', label: 'Enregistrement crédits TVA', icon: 'pi pi-percentage' },
         { path: '/reports/stock_billan', label: 'Bilan des Stocks', icon: 'pi pi-box' },
+        { path: '/reports/autres_elements', label: 'Autres Elements', icon: 'pi pi-list' },
     ];
 
     return (

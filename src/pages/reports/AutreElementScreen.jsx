@@ -17,13 +17,24 @@ function AutreElementScreen() {
         quantite: '',
         valeur: '',
         devise: 'BIF',
-        type_element: '',
+        type_element: 'autre',
         reference: '',
         observation: '',
+        exchange_rate: '1',
         document: null
     });
     const toast = useRef(null);
     const fileInputRef = useRef(null);
+
+    const typeElementOptions = [
+        { value: 'caisse', label: 'Caisse' },
+        { value: 'banque', label: 'Banque' },
+        { value: 'avance', label: 'Avance' },
+        { value: 'credit', label: 'Crédit' },
+        { value: 'investissement', label: 'Investissement' },
+        { value: 'immobilisation', label: 'Immobilisation' },
+        { value: 'autre', label: 'Autre' }
+    ];
 
     const fetchData = async () => {
         setLoading(true);
@@ -32,7 +43,6 @@ function AutreElementScreen() {
             if (response.success) {
                 setData(response.data);
             } else {
-                // Fallback struct for dev if API returns simple array or handled differently
                  setData(response.data || []);
             }
         } catch (error) {
@@ -65,9 +75,10 @@ function AutreElementScreen() {
             quantite: '',
             valeur: '',
             devise: 'BIF',
-            type_element: '',
+            type_element: 'autre',
             reference: '',
             observation: '',
+            exchange_rate: '1',
             document: null
         });
         if (fileInputRef.current) fileInputRef.current.value = "";
@@ -83,9 +94,10 @@ function AutreElementScreen() {
             quantite: item.quantite || '',
             valeur: item.valeur || '',
             devise: item.devise || 'BIF',
-            type_element: item.type_element || '',
+            type_element: item.type_element || 'autre',
             reference: item.reference || '',
             observation: item.observation || '',
+            exchange_rate: item.exchange_rate || '1',
             document: null 
         });
         if (fileInputRef.current) fileInputRef.current.value = "";
@@ -93,6 +105,8 @@ function AutreElementScreen() {
     };
 
     const handleSubmit = async (e) => {
+
+    
         e.preventDefault();
         
         const dataToSend = new FormData();
@@ -104,8 +118,10 @@ function AutreElementScreen() {
             }
         });
 
+      
+
         if (editingItem && editingItem.id) {
-            dataToSend.append('_method', 'PUT'); // Common Laravel pattern for file uploads on PUT
+            dataToSend.append('_method', 'PUT');
         }
 
         try {
@@ -195,6 +211,7 @@ function AutreElementScreen() {
                                     <th>Emplacement</th>
                                     <th>Quantité</th>
                                     <th>Valeur</th>
+                                    <th>Taux</th>
                                     <th>Document</th>
                                     <th className="text-end pe-4">Actions</th>
                                 </tr>
@@ -202,7 +219,7 @@ function AutreElementScreen() {
                             <tbody>
                                 {loading ? (
                                     <tr>
-                                        <td colSpan="8" className="text-center py-5">
+                                        <td colSpan="9" className="text-center py-5">
                                             <div className="spinner-border text-success" role="status">
                                                 <span className="visually-hidden">Chargement...</span>
                                             </div>
@@ -219,6 +236,7 @@ function AutreElementScreen() {
                                             <td className="font-monospace text-success fw-bold">
                                                 {formatCurrency(item.valeur, item.devise)}
                                             </td>
+                                            <td>{item.exchange_rate}</td>
                                             <td>
                                                 {item.document ? (
                                                     <a href={item.document} target="_blank" rel="noopener noreferrer" className="btn btn-link btn-sm p-0 text-decoration-none">
@@ -243,7 +261,7 @@ function AutreElementScreen() {
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan="8" className="text-center py-5 text-muted">
+                                        <td colSpan="9" className="text-center py-5 text-muted">
                                             Aucun élément trouvé
                                         </td>
                                     </tr>
@@ -257,46 +275,54 @@ function AutreElementScreen() {
             <Dialog 
                 header={editingItem ? "Modifier l'élément" : "Nouvel élément"} 
                 visible={showModal} 
-                style={{ width: '50vw', minWidth: '350px' }} 
+                style={{ width: '60vw', minWidth: '350px' }} 
                 onHide={() => setShowModal(false)}
             >
                 <form onSubmit={handleSubmit} className="p-fluid">
                     <div className="row g-3">
                         <div className="col-md-6">
-                            <label className="form-label">Date</label>
+                            <label className="form-label">Date <span className="text-danger">*</span></label>
                             <input type="date" name="date" className="form-control" value={formData.date} onChange={handleInputChange} required />
                         </div>
                         <div className="col-md-6">
-                            <label className="form-label">Type d'élément</label>
-                            <input type="text" name="type_element" className="form-control" placeholder="Ex: Matériel, Produit..." value={formData.type_element} onChange={handleInputChange} />
+                            <label className="form-label">Type d'élément <span className="text-danger">*</span></label>
+                            <select name="type_element" className="form-select" value={formData.type_element} onChange={handleInputChange} required>
+                                {typeElementOptions.map(option => (
+                                    <option key={option.value} value={option.value}>{option.label}</option>
+                                ))}
+                            </select>
                         </div>
                         <div className="col-12">
-                            <label className="form-label">Libellé</label>
+                            <label className="form-label">Libellé <span className="text-danger">*</span></label>
                             <input type="text" name="libelle" className="form-control" placeholder="Nom de l'élément" value={formData.libelle} onChange={handleInputChange} required />
                         </div>
                         <div className="col-md-6">
-                            <label className="form-label">Quantité</label>
-                            <input type="text" name="quantite" className="form-control" placeholder="0" value={formData.quantite} onChange={handleInputChange} />
+                            <label className="form-label">Quantité <span className="text-danger">*</span></label>
+                            <input type="number" name="quantite" className="form-control" placeholder="0" value={formData.quantite} onChange={handleInputChange} required min="0" step="any" />
                         </div>
                         <div className="col-md-6">
                             <label className="form-label">Emplacement</label>
                             <input type="text" name="emplacement" className="form-control" placeholder="Lieu de stockage" value={formData.emplacement} onChange={handleInputChange} />
                         </div>
-                        <div className="col-md-8">
-                            <label className="form-label">Valeur</label>
-                            <input type="number" name="valeur" className="form-control" placeholder="Montant" value={formData.valeur} onChange={handleInputChange} step="0.01" />
+                        <div className="col-md-4">
+                            <label className="form-label">Valeur <span className="text-danger">*</span></label>
+                            <input type="number" name="valeur" className="form-control" placeholder="Montant" value={formData.valeur} onChange={handleInputChange} required min="0" step="0.01" />
                         </div>
                         <div className="col-md-4">
-                            <label className="form-label">Devise</label>
-                            <select name="devise" className="form-select" value={formData.devise} onChange={handleInputChange}>
+                            <label className="form-label">Devise <span className="text-danger">*</span></label>
+                            <select name="devise" className="form-select" value={formData.devise} onChange={handleInputChange} required>
                                 <option value="BIF">BIF</option>
                                 <option value="USD">USD</option>
                                 <option value="EUR">EUR</option>
                             </select>
                         </div>
+                         <div className="col-md-4">
+                            <label className="form-label">Taux de change <span className="text-danger">*</span></label>
+                            <input type="number" name="exchange_rate" className="form-control" placeholder="1" value={formData.exchange_rate} onChange={handleInputChange} required min="1" step="0.0001" />
+                        </div>
                         <div className="col-md-6">
                             <label className="form-label">Référence</label>
-                            <input type="text" name="reference" className="form-control" placeholder="Réf. document / Interne" value={formData.reference} onChange={handleInputChange} />
+                            <input type="text" name="reference" className="form-control" placeholder="Réf. document / Interne" value={formData.reference} onChange={handleInputChange} maxLength="100"/>
                         </div>
                         <div className="col-md-6">
                             <label className="form-label">Document (PDF, Image, Word)</label>

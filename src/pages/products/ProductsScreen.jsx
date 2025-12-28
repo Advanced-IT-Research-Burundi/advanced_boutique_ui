@@ -322,10 +322,10 @@ const ProductScreen = () => {
                   <th className="border-0 px-4 py-3">{intl.formatMessage({id: "product.category"})}</th>
                   <th className="border-0 px-4 py-3">{intl.formatMessage({id: "product.purchasePrice"})}</th>
                   <th className="border-0 px-4 py-3">{intl.formatMessage({id: "product.salePrice"})}</th>
+                  <th className="border-0 px-4 py-3">{intl.formatMessage({id: "product.promotionPrice"})}</th>
                   <th className="border-0 px-4 py-3">{intl.formatMessage({id: "product.unit"})}</th>
                   <th className="border-0 px-4 py-3">{intl.formatMessage({id: "product.alertThreshold"})}</th>
                   <th className="border-0 px-4 py-3">{intl.formatMessage({id: "product.agency"})}</th>
-               
                   <th className="border-0 px-4 py-3">{intl.formatMessage({id: "product.actions"})}</th>
                 </tr>
               </thead>
@@ -411,6 +411,11 @@ const ProductScreen = () => {
                       <td className="px-4">
                         <span className="text-primary fw-bold">
                           {formatCurrency(product.sale_price_ttc)}
+                        </span>
+                      </td>
+                      <td className="px-4">
+                        <span className="text-primary fw-bold">
+                          {formatCurrency(product.prix_promotionnel)}
                         </span>
                       </td>
                       <td className="px-4">

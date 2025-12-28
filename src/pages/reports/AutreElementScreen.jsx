@@ -1,15 +1,21 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import ReportHeader from './RapportHeader';
 import ApiService from '../../services/api';
 import { Toast } from 'primereact/toast';
 import { Dialog } from 'primereact/dialog';
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchApiData } from '../../stores/slicer/apiDataSlicer';
 
 function AutreElementScreen() {
-    const [data, setData] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [showModal, setShowModal] = useState(false);
+    const [showDocumentModal, setShowDocumentModal] = useState(false);
+    const [selectedDocument, setSelectedDocument] = useState(null);
     const [editingItem, setEditingItem] = useState(null);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filterType, setFilterType] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
     const [formData, setFormData] = useState({
         date: '',
         libelle: '',
@@ -36,15 +42,15 @@ function AutreElementScreen() {
         { value: 'autre', label: 'Autre' }
     ];
 
-    const fetchData = async () => {
+    const dispatch = useDispatch();
+    const autreElements = useSelector((state) => state.apiData?.data?.autreElements);
+
+    const fetchData = async (page = 1) => {
         setLoading(true);
         try {
-            const response = await ApiService.get('/api/autre-elements');
-            if (response.success) {
-                setData(response.data);
-            } else {
-                 setData(response.data || []);
-            }
+            const url = `/api/autre-elements?page=${page}`;
+            await dispatch(fetchApiData({ url, itemKey: 'autreElements' })).unwrap();
+            setCurrentPage(page);
         } catch (error) {
             console.error(error);
             toast.current.show({ severity: 'error', summary: 'Erreur', detail: 'Erreur lors du chargement des données' });
@@ -54,8 +60,76 @@ function AutreElementScreen() {
     };
 
     useEffect(() => {
-        fetchData();
+        fetchData(1);
     }, []);
+
+    // Reset to page 1 when search or filter changes
+    useEffect(() => {
+        if (searchTerm || filterType) {
+            // Don't fetch, just filter locally
+            // Pagination will work on filtered results
+        }
+    }, [searchTerm, filterType]);
+
+    // Filtered data based on search and filter
+    const filteredData = useMemo(() => {
+        if (!autreElements?.data) return [];
+        
+        let filtered = autreElements.data;
+
+        // Filter by search term
+        if (searchTerm) {
+            filtered = filtered.filter(item =>
+                item.libelle?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                item.emplacement?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                item.reference?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                item.observation?.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+        }
+
+        // Filter by type
+        if (filterType) {
+            filtered = filtered.filter(item => item.type_element === filterType);
+        }
+
+        return filtered;
+    }, [autreElements, searchTerm, filterType]);
+
+    const getFileType = (url) => {
+        if (!url) return null;
+        const extension = url.split('.').pop().toLowerCase();
+        if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(extension)) return 'image';
+        if (extension === 'pdf') return 'pdf';
+        if (['doc', 'docx'].includes(extension)) return 'word';
+        return 'file';
+    };
+
+    const getFileIcon = (url) => {
+        const type = getFileType(url);
+        switch (type) {
+            case 'image': return 'pi-image';
+            case 'pdf': return 'pi-file-pdf';
+            case 'word': return 'pi-file-word';
+            default: return 'pi-file';
+        }
+    };
+
+    const viewDocument = (documentUrl) => {
+        if (!documentUrl) return;
+        setSelectedDocument(documentUrl);
+        setShowDocumentModal(true);
+    };
+
+    const getDocumentUrl = (path) => {
+        if (!path) return null;
+        // If path already starts with http, return as is
+        if (path.startsWith('http')) return path;
+        // Otherwise, construct the full URL
+        const baseUrl = import.meta.env.VITE_APP_DEV_MODE_LOCAL === 'true' 
+            ? import.meta.env.VITE_APP_BASE_URL_LOCAL 
+            : import.meta.env.VITE_APP_BASE_URL;
+        return `${baseUrl}/${path}`;
+    };
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -186,7 +260,7 @@ function AutreElementScreen() {
 
             <div className="card shadow-sm border-0 mt-4">
                 <div className="card-header bg-white py-3 border-bottom">
-                    <div className="d-flex justify-content-between align-items-center">
+                    <div className="d-flex justify-content-between align-items-center mb-3">
                         <h5 className="mb-0 text-success fw-bold">
                             <i className="pi pi-list me-2"></i>
                             Autres Éléments
@@ -196,12 +270,46 @@ function AutreElementScreen() {
                             Ajouter
                         </button>
                     </div>
+                    <div className="row g-2">
+                        <div className="col-md-6">
+                            <div className="input-group input-group-sm">
+                                <span className="input-group-text bg-white border-end-0">
+                                    <i className="pi pi-search text-muted"></i>
+                                </span>
+                                <input
+                                    type="text"
+                                    className="form-control border-start-0"
+                                    placeholder="Rechercher par libellé, emplacement, référence..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                />
+                            </div>
+                        </div>
+                        <div className="col-md-3">
+                            <select
+                                className="form-select form-select-sm"
+                                value={filterType}
+                                onChange={(e) => setFilterType(e.target.value)}
+                            >
+                                <option value="">Tous les types</option>
+                                {typeElementOptions.map(option => (
+                                    <option key={option.value} value={option.value}>{option.label}</option>
+                                ))}
+                            </select>
+                        </div>
+                        <div className="col-md-3 text-end">
+                            <span className="badge bg-light text-dark border">
+                                {filteredData.length} élément{filteredData.length > 1 ? 's' : ''}
+                            </span>
+                        </div>
+                    </div>
                 </div>
                 <div className="card-body p-0">
                     <div className="table-responsive">
                         <table className="table table-hover align-middle mb-0">
                             <thead className="bg-light text-muted">
                                 <tr>
+                                    <th>#</th>
                                     <th className="ps-4">Date</th>
                                     <th>Libellé</th>
                                     <th>Type</th>
@@ -222,13 +330,18 @@ function AutreElementScreen() {
                                             </div>
                                         </td>
                                     </tr>
-                                ) : data.length > 0 ? (
-                                    data.map((item) => (
+                                ) : filteredData.length > 0 ? (
+                                    filteredData.map((item, index) => (
                                         <tr key={item.id}>
+                                            <td>{index + 1}</td>
                                             <td className="ps-4 text-nowrap">{item.date}</td>
                                             <td className="fw-medium">{item.libelle}</td>
-                                            <td><span className="badge bg-light text-dark border">{item.type_element}</span></td>
-                                            <td>{item.emplacement}</td>
+                                            <td>
+                                                <span className="badge bg-light text-dark border">
+                                                    {typeElementOptions.find(opt => opt.value === item.type_element)?.label || item.type_element}
+                                                </span>
+                                            </td>
+                                            <td>{item.emplacement || '-'}</td>
                                             <td>{item.quantite}</td>
                                             <td className="font-monospace text-success fw-bold">
                                                 {formatCurrency(item.valeur, item.devise)}
@@ -236,10 +349,13 @@ function AutreElementScreen() {
                                             <td>{item.exchange_rate}</td>
                                             <td>
                                                 {item.document ? (
-                                                    <a href={item.document} target="_blank" rel="noopener noreferrer" className="btn btn-link btn-sm p-0 text-decoration-none">
-                                                        <i className="pi pi-file me-1"></i>
+                                                    <button
+                                                        className="btn btn-link btn-sm p-0 text-decoration-none"
+                                                        onClick={() => viewDocument(getDocumentUrl(item.document))}
+                                                    >
+                                                        <i className={`pi ${getFileIcon(item.document)} me-1`}></i>
                                                         Voir
-                                                    </a>
+                                                    </button>
                                                 ) : (
                                                     <span className="text-muted small">-</span>
                                                 )}
@@ -259,14 +375,122 @@ function AutreElementScreen() {
                                 ) : (
                                     <tr>
                                         <td colSpan="9" className="text-center py-5 text-muted">
-                                            Aucun élément trouvé
+                                            {searchTerm || filterType ? 'Aucun élément trouvé avec ces critères' : 'Aucun élément trouvé'}
                                         </td>
                                     </tr>
                                 )}
                             </tbody>
                         </table>
+                        
                     </div>
                 </div>
+                
+                {/* Pagination */}
+                {autreElements && autreElements.last_page > 1 && (
+                    <div className="card-footer bg-white border-top">
+                        <div className="d-flex justify-content-between align-items-center">
+                            <div className="text-muted small">
+                                {searchTerm || filterType ? (
+                                    `${filteredData.length} élément${filteredData.length > 1 ? 's' : ''} trouvé${filteredData.length > 1 ? 's' : ''}`
+                                ) : (
+                                    `Affichage de ${autreElements.from || 0} à ${autreElements.to || 0} sur ${autreElements.total || 0} éléments`
+                                )}
+                            </div>
+                            <nav>
+                                <ul className="pagination pagination-sm mb-0">
+                                    {/* Previous Button */}
+                                    <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                                        <button
+                                            className="page-link"
+                                            onClick={() => fetchData(currentPage - 1)}
+                                            disabled={currentPage === 1}
+                                        >
+                                            <i className="pi pi-angle-left"></i>
+                                        </button>
+                                    </li>
+
+                                    {/* Page Numbers */}
+                                    {(() => {
+                                        const pages = [];
+                                        const totalPages = autreElements.last_page;
+                                        let startPage = Math.max(1, currentPage - 2);
+                                        let endPage = Math.min(totalPages, currentPage + 2);
+
+                                        // Adjust if we're near the start
+                                        if (currentPage <= 3) {
+                                            endPage = Math.min(5, totalPages);
+                                        }
+
+                                        // Adjust if we're near the end
+                                        if (currentPage >= totalPages - 2) {
+                                            startPage = Math.max(1, totalPages - 4);
+                                        }
+
+                                        // First page
+                                        if (startPage > 1) {
+                                            pages.push(
+                                                <li key={1} className="page-item">
+                                                    <button className="page-link" onClick={() => fetchData(1)}>
+                                                        1
+                                                    </button>
+                                                </li>
+                                            );
+                                            if (startPage > 2) {
+                                                pages.push(
+                                                    <li key="ellipsis-start" className="page-item disabled">
+                                                        <span className="page-link">...</span>
+                                                    </li>
+                                                );
+                                            }
+                                        }
+
+                                        // Page numbers
+                                        for (let i = startPage; i <= endPage; i++) {
+                                            pages.push(
+                                                <li key={i} className={`page-item ${currentPage === i ? 'active' : ''}`}>
+                                                    <button className="page-link" onClick={() => fetchData(i)}>
+                                                        {i}
+                                                    </button>
+                                                </li>
+                                            );
+                                        }
+
+                                        // Last page
+                                        if (endPage < totalPages) {
+                                            if (endPage < totalPages - 1) {
+                                                pages.push(
+                                                    <li key="ellipsis-end" className="page-item disabled">
+                                                        <span className="page-link">...</span>
+                                                    </li>
+                                                );
+                                            }
+                                            pages.push(
+                                                <li key={totalPages} className="page-item">
+                                                    <button className="page-link" onClick={() => fetchData(totalPages)}>
+                                                        {totalPages}
+                                                    </button>
+                                                </li>
+                                            );
+                                        }
+
+                                        return pages;
+                                    })()}
+
+                                    {/* Next Button */}
+                                    <li className={`page-item ${currentPage === autreElements.last_page ? 'disabled' : ''}`}>
+                                        <button
+                                            className="page-link"
+                                            onClick={() => fetchData(currentPage + 1)}
+                                            disabled={currentPage === autreElements.last_page}
+                                        >
+                                            <i className="pi pi-angle-right"></i>
+                                        </button>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                )}
             </div>
 
             <Dialog 
@@ -342,6 +566,67 @@ function AutreElementScreen() {
                         <button type="submit" className="btn btn-success">Enregistrer</button>
                     </div>
                 </form>
+            </Dialog>
+
+            {/* Document Viewer Modal */}
+            <Dialog
+                header="Visualisation du document"
+                visible={showDocumentModal}
+                style={{ width: '70vw', minWidth: '350px' }}
+                onHide={() => {
+                    setShowDocumentModal(false);
+                    setSelectedDocument(null);
+                }}
+                maximizable
+            >
+                {selectedDocument && (
+                    <div className="text-center">
+                        {getFileType(selectedDocument) === 'image' ? (
+                            <img
+                                src={selectedDocument}
+                                alt="Document"
+                                className="img-fluid rounded shadow-sm"
+                                style={{ maxHeight: '70vh', objectFit: 'contain' }}
+                            />
+                        ) : getFileType(selectedDocument) === 'pdf' ? (
+                            <div>
+                                <iframe
+                                    src={selectedDocument}
+                                    style={{ width: '100%', height: '70vh', border: 'none' }}
+                                    title="PDF Viewer"
+                                />
+                                <div className="mt-3">
+                                    <a
+                                        href={selectedDocument}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="btn btn-primary"
+                                    >
+                                        <i className="pi pi-external-link me-2"></i>
+                                        Ouvrir dans un nouvel onglet
+                                    </a>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="py-5">
+                                <i className="pi pi-file" style={{ fontSize: '4rem', color: '#6c757d' }}></i>
+                                <p className="mt-3 text-muted">
+                                    Ce type de fichier ne peut pas être prévisualisé directement.
+                                </p>
+                                <a
+                                    href={selectedDocument}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="btn btn-primary"
+                                    download
+                                >
+                                    <i className="pi pi-download me-2"></i>
+                                    Télécharger le fichier
+                                </a>
+                            </div>
+                        )}
+                    </div>
+                )}
             </Dialog>
         </div>
     );

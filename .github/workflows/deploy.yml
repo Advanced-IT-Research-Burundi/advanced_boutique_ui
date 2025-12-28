@@ -29,6 +29,7 @@ jobs:
             git reset --hard HEAD
             git clean -f -d
             git checkout ${{secrets.MAIN_BRANCH}}
+            git stash
             git pull https://${{ secrets.GIT_TOKEN }}@github.com/Advanced-IT-Research-Burundi/advanced_boutique_ui.git ${{secrets.MAIN_BRANCH}}
 
             # Confirmation du déploiement

@@ -48,6 +48,7 @@ class ApiService {
   async patch(endpoint, data) { return this.http.patch(endpoint, data); }
   async delete(endpoint) { return this.http.delete(endpoint); }
   async get(endpoint, params = {}) { return this.http.get(endpoint, params); }
+  async uploadFile(endpoint, formData) { return this.http.uploadFile(endpoint, formData); }
 
   setToken(token) { return this.token.setToken(token); }
   clearToken() { return this.token.clearToken(); }

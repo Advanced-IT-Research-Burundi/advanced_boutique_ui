@@ -117,23 +117,20 @@ function AutreElementScreen() {
             }
         });
 
-      
-
         if (editingItem && editingItem.id) {
             dataToSend.append('_method', 'PUT');
+        }
+
+        for (let [key, value] of dataToSend.entries()) {
+            console.log(key, value);
         }
 
         try {
             let response;
             if (editingItem) {
-                response = await ApiService.put(`/api/autre-elements/${editingItem.id}`, dataToSend, {
-                    headers: { 'Content-Type': 'multipart/form-data' }
-                });
+                response = await ApiService.uploadFile(`/api/autre-elements/${editingItem.id}`, dataToSend, 'PUT');
             } else {
-                console.log("dataToSend", dataToSend.values());
-                response = await ApiService.post('/api/autre-elements', dataToSend, {
-                    headers: { 'Content-Type': 'multipart/form-data' }
-                });
+                response = await ApiService.uploadFile('/api/autre-elements', dataToSend, 'POST');
             }
 
             if (response.success) {
@@ -278,7 +275,7 @@ function AutreElementScreen() {
                 style={{ width: '60vw', minWidth: '350px' }} 
                 onHide={() => setShowModal(false)}
             >
-                <form onSubmit={handleSubmit} className="p-fluid">
+                <form onSubmit={handleSubmit} className="p-fluid" id="form" encType="multipart/form-data">
                     <div className="row g-3">
                         <div className="col-md-6">
                             <label className="form-label">Date <span className="text-danger">*</span></label>

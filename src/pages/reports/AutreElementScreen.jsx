@@ -317,6 +317,7 @@ function AutreElementScreen() {
                                     <th>Quantité</th>
                                     <th>Valeur</th>
                                     <th>Taux</th>
+                                    <th> Montant En FBU</th>
                                     <th>Document</th>
                                     <th className="text-end pe-4">Actions</th>
                                 </tr>
@@ -347,6 +348,7 @@ function AutreElementScreen() {
                                                 {formatCurrency(item.valeur, item.devise)}
                                             </td>
                                             <td>{item.exchange_rate}</td>
+                                            <td>{formatCurrency(item.exchange_rate * item.valeur)}</td>
                                             <td>
                                                 {item.document ? (
                                                     <button

@@ -252,6 +252,7 @@ function AutreElementScreen() {
         }).format(amount || 0);
     };
 
+    const totalAmount = filteredData?.reduce((total, item) => total + (item.valeur * item.quantite * item.exchange_rate || 0), 0);
     return (
         <div className="container-fluid">
             <ReportHeader />
@@ -381,6 +382,11 @@ function AutreElementScreen() {
                                         </td>
                                     </tr>
                                 )}
+
+                                <tr>
+                                    <td className="" colSpan="8">TOTAL</td>
+                                    <td>{formatCurrency(totalAmount)}</td>
+                                </tr>
                             </tbody>
                         </table>
                         

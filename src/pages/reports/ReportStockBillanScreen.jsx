@@ -14,9 +14,15 @@ function ReportStockBillanScreen() {
             url: '/api/stock_billan',
             itemKey: 'STOCK_BILLAN'
         }))
+
+        dispatch(fetchApiData({
+            url: '/api/autre-elements',
+            itemKey: 'AUTRE_ELEMENTS'
+        }))
     }, [dispatch]);
 
     const stockData = data?.STOCK_BILLAN?.stock_produits || [];
+    const autreElementsData = data?.AUTRE_ELEMENTS || [];
     
     // Filter data based on selection
     const filteredStockData = selectedStocks && selectedStocks.length > 0 
@@ -152,6 +158,36 @@ function ReportStockBillanScreen() {
                                     </tr>
                                 </tfoot>
                             )}
+                        </table>
+                    </div>
+
+                    <div>
+                        <h2>Autres Avoirs</h2>
+                        <table className="table table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <td>NUM</td>
+                                    <td>DATE</td>
+                                    <td>EMPLACEMENT</td>
+                                    <td>QUANTITE</td>
+                                    <td>VALEUR en BIF</td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {autreElementsData?.data?.map((item, index) => (
+                                    <tr key={index}>
+                                        <td>{index + 1}</td>
+                                        <td>{item.date}</td>
+                                        <td>{item.libelle}</td>
+                                        <td>{item.quantite}</td>
+                                        <td>{formatCurrency(item.valeur * item.exchange_rate)}</td>
+                                    </tr>
+                                ))}
+                                <tr>
+                                    <td colSpan="4" className="text-end">Total</td>
+                                    <td>{formatCurrency(autreElementsData?.data?.reduce((acc, item) => acc + (item.valeur * item.exchange_rate), 0))}</td>
+                                </tr>
+                            </tbody>
                         </table>
                     </div>
                 </div>

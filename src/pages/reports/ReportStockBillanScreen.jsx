@@ -53,6 +53,10 @@ function ReportStockBillanScreen() {
         minute: '2-digit'
     });
 
+    const totalAutreElement = autreElementsData?.data?.reduce((acc, item) => acc + (parseFloat(item.valeur) || 0), 0);
+
+    const totalStock = totalGlobal + totalAutreElement;
+
     return (
         <div className="container-fluid">
             <div className="d-print-none">
@@ -185,12 +189,16 @@ function ReportStockBillanScreen() {
                                 ))}
                                 <tr>
                                     <td colSpan="4" className="text-end">Total</td>
-                                    <td>{formatCurrency(autreElementsData?.data?.reduce((acc, item) => acc + (item.valeur * item.exchange_rate), 0))}</td>
+                                    <td>{formatCurrency(totalAutreElement)}</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
+            </div>
+
+            <div>
+                <h4>Montant Total des Stocks : {formatCurrency(totalStock )}</h4>
             </div>
             
             {/* Print Footer with Signature Area if needed */}

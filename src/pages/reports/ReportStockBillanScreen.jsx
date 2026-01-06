@@ -198,7 +198,7 @@ function ReportStockBillanScreen() {
             </div>
 
             <div>
-                <h4>Montant Total des Stocks : {formatCurrency(totalStock )}</h4>
+                <h4>Montant Total : {formatCurrency(totalStock )}</h4>
             </div>
             
             {/* Print Footer with Signature Area if needed */}

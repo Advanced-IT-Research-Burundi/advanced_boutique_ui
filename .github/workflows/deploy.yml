@@ -25,12 +25,17 @@ jobs:
             git config pull.rebase true
 
             # Mettre à jour la branche distante avec rebase en utilisant le token GitHub
+            git config --global --add safe.directory ${{secrets.WORK_DIR}}
             git reset --hard HEAD
             git clean -f -d
             git checkout ${{secrets.MAIN_BRANCH}}
+            git stash
+            git config --global --add safe.directory /var/www/projects/ubwiza/advanced_boutique_ui
             git pull https://${{ secrets.GIT_TOKEN }}@github.com/Advanced-IT-Research-Burundi/advanced_boutique_ui.git ${{secrets.MAIN_BRANCH}}
+            chmod 777 -R ${{secrets.WORK_DIR}}
 
             # Confirmation du déploiement
+            touch deploy.log
             echo "Deployed successfully" >> deploy.log
             date +"%Y-%m-%d %H:%M:%S" >> deploy.log
             # Installer les dépendances et builder le projet

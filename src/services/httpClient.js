@@ -81,9 +81,9 @@ class HttpClient {
     });
   }
 
-  async uploadFile(endpoint, formData) {
+  async uploadFile(endpoint, formData , method = 'POST') {
     const response = await fetch(`${this.baseURL}${endpoint}`, {
-      method: 'POST',
+      method: method,
       headers: {
         ...tokenManager.getAuthHeaders(),
       },

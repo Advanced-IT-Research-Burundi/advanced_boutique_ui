@@ -126,13 +126,22 @@ export const routesConfig = [
   }
 ];
 
-export const getMenuItems = () => {
-  return routesConfig.map(({ path, icon, labelKey, policy }) => ({
-    path,
-    icon,
-    labelKey,
-    policy
-  }));
+export const getMenuItems = (userRole = null) => {
+  if (!userRole) {
+    return routesConfig.map(({ path, icon, labelKey }) => ({
+      path,
+      icon,
+      labelKey
+    }));
+  }
+
+  return routesConfig
+    .filter(route => !route.roles || route.roles.includes(userRole))
+    .map(({ path, icon, labelKey }) => ({
+      path,
+      icon,
+      labelKey
+    }));
 };
 
 export const getRoutes = () => {

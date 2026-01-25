@@ -290,6 +290,7 @@
 
   "product.title": "Gestion des Produits",
   "product.pdf": "PDF",
+  "product.promotionPrice": "Prix promotionnel",
   "product.totalProducts": "produit(s) au total",
   "product.refreshing": "Actualisation...",
   "product.refresh": "Actualiser",

@@ -25,6 +25,7 @@ const ProductCreateScreen = () => {
     sale_price_ttc: '',
     unit: '',
     alert_quantity: '',
+    prix_promotionnel: '', // add this to input field
     image: null
   };
 
@@ -198,16 +199,34 @@ const ProductCreateScreen = () => {
 
   
   const [calculatedTTC, setCalculatedTTC] = useState('');
+  const [lastModifiedField, setLastModifiedField] = useState('ht'); // Track which field was last modified
+
+  // Fonction pour calculer le prix HT à partir du TTC
+  const calculateHT = (priceTTC, tva) => {
+    const ttc = parseFloat(priceTTC) || 0;
+    const tvaTaux = parseFloat(tva) || 0;
+    return (ttc / (1 + tvaTaux / 100)).toFixed(2);
+  };
 
   useEffect(() => {
-    if (form.values.sale_price_ht && form.values.tva) {
-      const ttc = calculateTTC(form.values.sale_price_ht, form.values.tva);
-      setCalculatedTTC(ttc);
-      if (form.values.sale_price_ttc !== ttc) {
-        form.values.sale_price_ttc = ttc;
+    if (lastModifiedField === 'ht') {
+      // Calculer TTC à partir de HT
+      if (form.values.sale_price_ht && form.values.tva !== '') {
+        const ttc = calculateTTC(form.values.sale_price_ht, form.values.tva);
+        if (form.values.sale_price_ttc !== ttc) {
+          form.values.sale_price_ttc = ttc;
+        }
+      }
+    } else if (lastModifiedField === 'ttc') {
+      // Calculer HT à partir de TTC
+      if (form.values.sale_price_ttc && form.values.tva !== '') {
+        const ht = calculateHT(form.values.sale_price_ttc, form.values.tva);
+        if (form.values.sale_price_ht !== ht) {
+          form.values.sale_price_ht = ht;
+        }
       }
     }
-  }, [form.values.sale_price_ht, form.values.tva]);
+  }, [form.values.sale_price_ht, form.values.sale_price_ttc, form.values.tva, lastModifiedField]);
 
   return (
     <div className="container-fluid py-4">
@@ -343,6 +362,10 @@ const ProductCreateScreen = () => {
                         helperText="Prix de vente hors taxes"
                         step="0.01"
                         min="0"
+                        onChange={(name, value) => {
+                          form.handleChange(name, value);
+                          setLastModifiedField('ht');
+                        }}
                       />
                     </div>
 
@@ -371,9 +394,25 @@ const ProductCreateScreen = () => {
                         helperText="Prix calculé automatiquement (HT + TVA)"
                         step="0.01"
                         min="0"
-                        value={calculatedTTC || form.values.sale_price_ttc}
-                        readOnly
-                        disabled
+                        value={form.values.sale_price_ttc}
+                        onChange={(name, value) => {
+                          form.handleChange(name, value);
+                          setLastModifiedField('ttc');
+                        }}
+                      />
+                    </div>
+
+                    <div className="col-md-4">
+                      <FormField
+                        name="prix_promotionnel"
+                        form={form}
+                        type="number"
+                        label="Prix Promotionnel"
+                        placeholder="0.00"
+                        icon="pi pi-tag"
+                        helperText="Prix en promotion (optionnel)"
+                        step="0.01"
+                        min="0"
                       />
                     </div>
 

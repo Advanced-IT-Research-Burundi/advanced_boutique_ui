@@ -74,7 +74,7 @@ function BonEntreShowScreen() {
     const totalPrixAchat = detailsData?.reduce((total, detail) => total + (Number(detail?.total_pa) || 0), 0) || 0;
     const totalPrixAchatV = detailsData?.reduce((total, detail) => total + (Number(detail?.total_pv) || 0), 0) || 0;
 
-    const totalRevient = (totalPrixAchat * exchangeRate) + totalDepense;
+    const totalRevient = totalPrixAchat + totalDepense;
     const totalBenefice = totalPrixAchatV - totalRevient;
     
     return (

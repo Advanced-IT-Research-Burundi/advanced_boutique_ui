@@ -4,11 +4,13 @@ import { Tooltip } from 'primereact/tooltip';
 import { useIntl } from "react-intl";
 import { getMenuItems } from '../config/routeConfig.js';
 import usePolicies from '../hooks/usePolicies';
+import { useAuth } from '../contexts/AuthContext.jsx';
 
 const Sidebar = ({ isCollapsed, onToggle }) => {
   const location = useLocation();
   const intl = useIntl();
-  const menuItems = getMenuItems();
+  const { user } = useAuth();
+  const menuItems = getMenuItems(user?.role);
 
   const {  isAllowedListRole } = usePolicies();
 

@@ -26,7 +26,8 @@ const CommandesScreen = () => {
 
   // Computed values
   const totalWeight = cart.reduce((sum, item) => sum + (item.weight_kg * item.quantity), 0);
-  const totalAmount = cart.reduce((sum, item) => sum + (item.pu * item.quantity), 0);
+  const totalAmount = cart.reduce((sum, item) => sum + (item.pu * item.quantity), 0);  
+  const totalQuantity = cart.reduce((sum, item) => sum + item.quantity, 0);
   const isWeightExceeded = selectedVehicle && totalWeight > selectedVehicle.poids;
   const canConfirmOrder = selectedVehicle && cart.length > 0 && !isWeightExceeded;
 
@@ -282,6 +283,12 @@ const CommandesScreen = () => {
                     <span>Poids total:</span>
                     <strong className={isWeightExceeded ? 'text-danger' : 'text-success'}>
                       {totalWeight.toFixed(2)} kg
+                    </strong>
+                  </div>
+                  <div className="d-flex justify-content-between align-items-center mb-2">
+                    <span>Quantité total:</span>
+                    <strong className={isWeightExceeded ? 'text-danger' : 'text-success'}>
+                      {totalQuantity} 
                     </strong>
                   </div>
                   <div className="d-flex justify-content-between align-items-center mb-3">

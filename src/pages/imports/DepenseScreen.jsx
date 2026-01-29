@@ -67,7 +67,7 @@ function DepenseScreen() {
         if (form.amount && form.exchange_rate) {
             setform(prev => ({
                 ...prev,
-                amount_currency: prev.amount * prev.exchange_rate
+                amount_currency: prev.amount * (prev.exchange_rate * 1)
             }));
         }
     }, [form.amount, form.exchange_rate]);

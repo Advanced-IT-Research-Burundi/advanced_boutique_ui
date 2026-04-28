@@ -1,8 +1,18 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { Toast } from 'primereact/toast';
-import ApiService from '../../services/api.js';
-import { useNavigate } from 'react-router-dom';
-import { formatCurrency, getClientInfo, formatDate } from './../../utils/helpers.js'
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useMemo,
+} from "react";
+import { Toast } from "primereact/toast";
+import ApiService from "../../services/api.js";
+import { useNavigate } from "react-router-dom";
+import {
+  formatCurrency,
+  getClientInfo,
+  formatDate,
+} from "./../../utils/helpers.js";
 
 const StockTransferScreen = () => {
   // State management
@@ -13,16 +23,16 @@ const StockTransferScreen = () => {
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [quantities, setQuantities] = useState({});
   const [validatedProformaIds, setValidatedProformaIds] = useState(new Set());
-  
+
   const [loading, setLoading] = useState(false);
   const [transferLoading, setTransferLoading] = useState(false);
   const [validatingProforma, setValidatingProforma] = useState(false);
-  
+
   const [formData, setFormData] = useState({
-    stockSource: '',
-    destinationStockId: '',
-    selectedCategory: '',
-    search: ''
+    stockSource: "",
+    destinationStockId: "",
+    selectedCategory: "",
+    search: "",
   });
 
   const toast = useRef(null);
@@ -34,53 +44,69 @@ const StockTransferScreen = () => {
   }, []);
 
   const showToast = useCallback((severity, detail) => {
-    toast.current?.show({ 
-      severity, 
-      summary: severity === 'error' ? 'Erreur' : severity === 'success' ? 'Succès' : 'Information', 
-      detail, 
-      life: 3000 
+    toast.current?.show({
+      severity,
+      summary:
+        severity === "error"
+          ? "Erreur"
+          : severity === "success"
+            ? "Succès"
+            : "Information",
+      detail,
+      life: 3000,
     });
   }, []);
 
-  const getStockName = useCallback((stockId) => {
-    const stock = stocks.find(s => s.id === parseInt(stockId));
-    return stock?.name || '';
-  }, [stocks]);
-  
+  const getStockName = useCallback(
+    (stockId) => {
+      const stock = stocks.find((s) => s.id === parseInt(stockId));
+      return stock?.name || "";
+    },
+    [stocks],
+  );
+
   const productsWithInsufficientStock = useMemo(() => {
-    return selectedProducts.filter(product => {
+    return selectedProducts.filter((product) => {
       const requestedQty = quantities[product.id] || 1;
       const availableQty = product.stock_quantity || 0;
       return requestedQty > availableQty;
     });
   }, [selectedProducts, quantities]);
 
-  
   const isTransferValid = useMemo(() => {
-    if (!formData.stockSource || !formData.destinationStockId || selectedProducts.length === 0) {
+    if (
+      !formData.stockSource ||
+      !formData.destinationStockId ||
+      selectedProducts.length === 0
+    ) {
       return false;
     }
-    
-    
+
     return productsWithInsufficientStock.length === 0;
-  }, [formData.stockSource, formData.destinationStockId, selectedProducts.length, productsWithInsufficientStock.length]);
+  }, [
+    formData.stockSource,
+    formData.destinationStockId,
+    selectedProducts.length,
+    productsWithInsufficientStock.length,
+  ]);
 
-  
-  const hasInsufficientStock = useCallback((productId) => {
-    return productsWithInsufficientStock.some(p => p.id === productId);
-  }, [productsWithInsufficientStock]);
+  const hasInsufficientStock = useCallback(
+    (productId) => {
+      return productsWithInsufficientStock.some((p) => p.id === productId);
+    },
+    [productsWithInsufficientStock],
+  );
 
-  
   const loadStocks = async () => {
     try {
-      const response = await ApiService.get('/api/stock-transfers/stocks');
+      const response = await ApiService.get("/api/stock-transfers/stocks");
       if (response.success) {
         setStocks(response.data.stocks || []);
       } else {
-        showToast('error', 'Erreur lors du chargement des stocks');
+        showToast("error", "Erreur lors du chargement des stocks");
       }
     } catch (error) {
-      showToast('error', error.message);
+      showToast("error", error.message);
     }
   };
 
@@ -96,23 +122,29 @@ const StockTransferScreen = () => {
       setLoading(true);
       const [categoriesResponse, proformasResponse] = await Promise.all([
         ApiService.get(`/api/stock-transfers/stocks/${stockId}/categories`),
-        ApiService.get(`/api/stock-transfers/stocks/${stockId}/proformas`)
+        ApiService.get(`/api/stock-transfers/stocks/${stockId}/proformas`),
       ]);
 
       if (categoriesResponse.success && proformasResponse.success) {
         setCategories(categoriesResponse.data.categories || []);
         setProformas(proformasResponse.data.proformas || []);
-        
+
         if (categoriesResponse.data.categories?.length > 0) {
           const firstCategory = categoriesResponse.data.categories[0];
-          setFormData(prev => ({ ...prev, selectedCategory: firstCategory.id }));
+          setFormData((prev) => ({
+            ...prev,
+            selectedCategory: firstCategory.id,
+          }));
           updateProductList(firstCategory.id, stockId);
         } else {
           setProducts([]);
         }
       }
     } catch (error) {
-      showToast('error', 'Erreur lors du chargement des données: ' + error.message);
+      showToast(
+        "error",
+        "Erreur lors du chargement des données: " + error.message,
+      );
     } finally {
       setLoading(false);
     }
@@ -128,30 +160,35 @@ const StockTransferScreen = () => {
         stock_id: sourceStock,
         category_id: categoryId,
         search: formData.search,
-        exclude_products: selectedProducts.map(p => p.id)
+        exclude_products: selectedProducts.map((p) => p.id),
       };
 
-      const response = await ApiService.get('/api/stock-transfers/stocks/products', params);
+      const response = await ApiService.get(
+        "/api/stock-transfers/stocks/products",
+        params,
+      );
       if (response.success) {
         setProducts(response.data.products || []);
       }
     } catch (error) {
-      showToast('error', 'Erreur lors du chargement des produits: ' + error.message);
+      showToast(
+        "error",
+        "Erreur lors du chargement des produits: " + error.message,
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  
   const handleFormChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    
-    if (field === 'stockSource') {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+
+    if (field === "stockSource") {
       updateStockSource(value);
       resetSelection();
-    } else if (field === 'selectedCategory') {
+    } else if (field === "selectedCategory") {
       updateProductList(value);
-    } else if (field === 'search') {
+    } else if (field === "search") {
       // Debounce search
       if (searchTimeoutRef.current) {
         clearTimeout(searchTimeoutRef.current);
@@ -169,68 +206,82 @@ const StockTransferScreen = () => {
   };
 
   const addToTransfer = (product) => {
-    if (!selectedProducts.find(p => p.id === product.id)) {
-      setSelectedProducts(prev => [...prev, product]);
-      setQuantities(prev => ({ ...prev, [product.id]: 1 }));
+    if (!selectedProducts.find((p) => p.id === product.id)) {
+      setSelectedProducts((prev) => [...prev, product]);
+      setQuantities((prev) => ({ ...prev, [product.id]: 1 }));
       updateProductList(formData.selectedCategory);
     }
   };
 
-  const removeFromTransfer = useCallback((productId) => {
-    setSelectedProducts(prev => prev.filter(p => p.id !== productId));
-    setQuantities(prev => {
-      const newQuantities = { ...prev };
-      delete newQuantities[productId];
-      return newQuantities;
-    });
-    
-    
-    if (formData.selectedCategory) {
-      updateProductList(formData.selectedCategory);
-    }
-  }, [formData.selectedCategory]);
+  const removeFromTransfer = useCallback(
+    (productId) => {
+      setSelectedProducts((prev) => prev.filter((p) => p.id !== productId));
+      setQuantities((prev) => {
+        const newQuantities = { ...prev };
+        delete newQuantities[productId];
+        return newQuantities;
+      });
+
+      if (formData.selectedCategory) {
+        updateProductList(formData.selectedCategory);
+      }
+    },
+    [formData.selectedCategory],
+  );
 
   const updateQuantity = useCallback((productId, quantity) => {
-    
-    setQuantities(prev => ({ ...prev, [productId]: quantity }));
+    setQuantities((prev) => ({ ...prev, [productId]: quantity }));
   }, []);
 
   const validateProforma = async (proforma) => {
-
     if (validatedProformaIds.size > 0) {
-      showToast('info', 'Validation déjà effectuée faire le transfert de l\'existant ou supprime le pour en créer un nouveau'+validatedProformaIds.size);
+      showToast(
+        "info",
+        "Validation déjà effectuée faire le transfert de l'existant ou supprime le pour en créer un nouveau" +
+          validatedProformaIds.size,
+      );
       return;
     }
     if (!formData.stockSource) {
-      showToast('error', 'Veuillez d\'abord sélectionner un stock source');
+      showToast("error", "Veuillez d'abord sélectionner un stock source");
       return;
     }
-    
+
     try {
       setValidatingProforma(true);
-      
+
       let proformaItems = [];
       try {
         proformaItems = JSON.parse(proforma.proforma_items);
+        console.log("proformaItems", proformaItems);
       } catch (parseError) {
-        showToast('error', 'Erreur lors de la lecture des éléments du proforma');
+        showToast(
+          "error",
+          "Erreur lors de la lecture des éléments du proforma",
+        );
         return;
       }
 
       if (!Array.isArray(proformaItems) || proformaItems.length === 0) {
-        showToast('error', 'Aucun produit trouvé dans le proforma');
+        showToast("error", "Aucun produit trouvé dans le proforma");
         return;
       }
 
-      const productIds = proformaItems.map(item => item.product_id);
+      const productIds = proformaItems.map((item) => item.product_id);
 
-      const response = await ApiService.get('/api/stock-transfers/stocks/products/proforma', {
-        stock_id: formData.stockSource,
-        product_ids: productIds.join(',')
-      });
+      const response = await ApiService.get(
+        "/api/stock-transfers/stocks/products/proforma",
+        {
+          stock_id: formData.stockSource,
+          product_ids: productIds.join(","),
+        },
+      );
 
       if (!response.success) {
-        showToast('error', 'Erreur lors du chargement des produits du proforma');
+        showToast(
+          "error",
+          "Erreur lors du chargement des produits du proforma",
+        );
         return;
       }
 
@@ -241,59 +292,69 @@ const StockTransferScreen = () => {
       let updatedCount = 0;
 
       // Remove duplicates from existing selection for this proforma
-      const existingFromThisProforma = newSelectedProducts.filter(p => 
-        proformaItems.some(item => item.product_id === p.id)
+      const existingFromThisProforma = newSelectedProducts.filter((p) =>
+        proformaItems.some((item) => item.product_id === p.original_id || item.product_id === p.id),
       );
 
-      proformaItems.forEach(item => {
+      proformaItems.forEach((item) => {
         console.log("item", item);
-       
-        const productFromAPI = productsFromAPI.find(p => p.id == item.product_id);
+        // Utiliser original_id pour matcher avec l'ancien stock_product.id du proforma
+        const productFromAPI = productsFromAPI.find(
+          (p) => p.original_id == item.product_id || p.product_id == item.product_id,
+        );
         console.log("productFromAPI", productsFromAPI);
-        
-        
         if (productFromAPI) {
-          const existingProductIndex = newSelectedProducts.findIndex(p => p.id === item.product_id);
-          
+          const existingProductIndex = newSelectedProducts.findIndex(
+            (p) => p.id === productFromAPI.id,
+          );
           if (existingProductIndex === -1) {
             newSelectedProducts.push(productFromAPI);
             addedCount++;
           } else {
             updatedCount++;
           }
-          
+
           const maxStock = productFromAPI.stock_quantity || 0;
           const requestedQty = item.quantity || 1;
-          newQuantities[item.product_id] = requestedQty;
-
+          // Utiliser le nouvel id (stock_product.id du stock source) pour les quantités
+          newQuantities[productFromAPI.id] = requestedQty;
           if (requestedQty > maxStock) {
-            showToast('warn', `Quantité réduite pour ${productFromAPI.name}: ${requestedQty} → ${maxStock} (stock disponible)`);
+            showToast(
+              "warn",
+              `Quantité réduite pour ${productFromAPI.name}: ${requestedQty} → ${maxStock} (stock disponible)`,
+            );
           }
         } else {
-          showToast('warn', `Produit Code ${item.code} non trouvé dans le stock source`);
+          showToast(
+            "warn",
+            `Produit Code ${JSON.stringify(item)} non trouvé dans le stock source`,
+          );
         }
       });
 
-      const updatedProducts = newSelectedProducts.map(product => ({
+      const updatedProducts = newSelectedProducts.map((product) => ({
         ...product,
-        is_proforma: true
+        is_proforma: true,
       }));
 
       setSelectedProducts(updatedProducts);
       setQuantities(newQuantities);
-      setValidatedProformaIds(prev => new Set([...prev, proforma.id]));
+      setValidatedProformaIds((prev) => new Set([...prev, proforma.id]));
 
       updateProductList(formData.selectedCategory);
 
       if (addedCount > 0 || updatedCount > 0) {
-        const message = addedCount > 0 
-          ? `${addedCount} produit(s) ajouté(s) depuis le proforma #PRO-${proforma.id.toString().padStart(6, '0')}`
-          : `Quantités mises à jour pour le proforma #PRO-${proforma.id.toString().padStart(6, '0')}`;
-        showToast('success', message);
+        const message =
+          addedCount > 0
+            ? `${addedCount} produit(s) ajouté(s) depuis le proforma #PRO-${proforma.id.toString().padStart(6, "0")}`
+            : `Quantités mises à jour pour le proforma #PRO-${proforma.id.toString().padStart(6, "0")}`;
+        showToast("success", message);
       }
-
     } catch (error) {
-      showToast('error', 'Erreur lors de la validation du proforma: ' + error.message);
+      showToast(
+        "error",
+        "Erreur lors de la validation du proforma: " + error.message,
+      );
     } finally {
       setValidatingProforma(false);
     }
@@ -301,52 +362,63 @@ const StockTransferScreen = () => {
 
   const handleTransfer = async () => {
     if (!formData.stockSource || !formData.destinationStockId) {
-      showToast('error', 'Veuillez sélectionner les stocks source et destination');
+      showToast(
+        "error",
+        "Veuillez sélectionner les stocks source et destination",
+      );
       return;
     }
 
     if (formData.stockSource === formData.destinationStockId) {
-      showToast('error', 'Le stock source et destination ne peuvent pas être identiques');
+      showToast(
+        "error",
+        "Le stock source et destination ne peuvent pas être identiques",
+      );
       return;
     }
 
     if (selectedProducts.length === 0) {
-      showToast('error', 'Veuillez sélectionner au moins un produit');
+      showToast("error", "Veuillez sélectionner au moins un produit");
       return;
     }
 
     if (!isTransferValid) {
-      showToast('error', 'Certains produits ont des quantités insuffisantes en stock');
+      showToast(
+        "error",
+        "Certains produits ont des quantités insuffisantes en stock",
+      );
       return;
     }
 
     try {
       setTransferLoading(true);
-      
+
       const transferData = {
         from_stock_id: formData.stockSource,
         to_stock_id: formData.destinationStockId,
-        products: selectedProducts.map(product => ({
+        products: selectedProducts.map((product) => ({
           product_id: product.id,
           quantity: quantities[product.id] || 1,
           product_name: product.name,
-          product_code: product.code
+          product_code: product.code,
         })),
-        proforma_id: Array.from(validatedProformaIds)[0]
+        proforma_id: Array.from(validatedProformaIds)[0],
       };
 
-      const response = await ApiService.post('/api/stock-transfers/stocks/transfer', transferData);
+      const response = await ApiService.post(
+        "/api/stock-transfers/stocks/transfer",
+        transferData,
+      );
 
       if (response.success) {
-        showToast('success', 'Transfert effectué avec succès');
+        showToast("success", "Transfert effectué avec succès");
         updateStockSource(formData.stockSource);
         setSelectedProducts([]);
         setQuantities({});
         setValidatedProformaIds(new Set());
       }
-
     } catch (error) {
-      showToast('error', error.message || 'Erreur lors du transfert');
+      showToast("error", error.message || "Erreur lors du transfert");
     } finally {
       setTransferLoading(false);
     }
@@ -364,7 +436,7 @@ const StockTransferScreen = () => {
   return (
     <div className="container-fluid">
       <Toast ref={toast} />
-      
+
       {/* Header */}
       <div className="row mb-4">
         <div className="col-12">
@@ -373,10 +445,15 @@ const StockTransferScreen = () => {
               <h2 className="text-primary mb-1">
                 <i className="pi pi-sync me-2"></i>Transfert de Stock
               </h2>
-              <p className="text-muted mb-0">Transférer des produits entre stocks</p>
+              <p className="text-muted mb-0">
+                Transférer des produits entre stocks
+              </p>
             </div>
             <div>
-              <button onClick={() => navigate('/stocks')} className="btn btn-outline-primary">
+              <button
+                onClick={() => navigate("/stocks")}
+                className="btn btn-outline-primary"
+              >
                 <i className="pi pi-arrow-left me-1"></i>Retour
               </button>
             </div>
@@ -395,13 +472,15 @@ const StockTransferScreen = () => {
           <div className="row g-3">
             <div className="col-md-6">
               <label className="form-label">Stock source</label>
-              <select 
-                className="form-select" 
+              <select
+                className="form-select"
                 value={formData.stockSource}
-                onChange={(e) => handleFormChange('stockSource', e.target.value)}
+                onChange={(e) =>
+                  handleFormChange("stockSource", e.target.value)
+                }
               >
                 <option value="">Sélectionner un stock source</option>
-                {stocks.map(stock => (
+                {stocks.map((stock) => (
                   <option key={stock.id} value={stock.id}>
                     {stock.name}
                   </option>
@@ -410,17 +489,21 @@ const StockTransferScreen = () => {
             </div>
             <div className="col-md-6">
               <label className="form-label">Stock destination</label>
-              <select 
-                className="form-select" 
+              <select
+                className="form-select"
                 value={formData.destinationStockId}
-                onChange={(e) => handleFormChange('destinationStockId', e.target.value)}
+                onChange={(e) =>
+                  handleFormChange("destinationStockId", e.target.value)
+                }
               >
                 <option value="">Sélectionner un stock destination</option>
-                {stocks.filter(s => s.id !== parseInt(formData.stockSource)).map(stock => (
-                  <option key={stock.id} value={stock.id}>
-                    {stock.name}
-                  </option>
-                ))}
+                {stocks
+                  .filter((s) => s.id !== parseInt(formData.stockSource))
+                  .map((stock) => (
+                    <option key={stock.id} value={stock.id}>
+                      {stock.name}
+                    </option>
+                  ))}
               </select>
             </div>
           </div>
@@ -431,15 +514,17 @@ const StockTransferScreen = () => {
       {categories.length > 0 && (
         <div className="mb-4">
           <div className="d-flex flex-wrap gap-2">
-            {categories.map(category => (
+            {categories.map((category) => (
               <button
                 key={category.id}
                 className={`btn ${
-                  category.id === parseInt(formData.selectedCategory) 
-                    ? 'btn-success' 
-                    : 'btn-outline-primary'
+                  category.id === parseInt(formData.selectedCategory)
+                    ? "btn-success"
+                    : "btn-outline-primary"
                 }`}
-                onClick={() => handleFormChange('selectedCategory', category.id)}
+                onClick={() =>
+                  handleFormChange("selectedCategory", category.id)
+                }
               >
                 {category.name}
               </button>
@@ -456,44 +541,53 @@ const StockTransferScreen = () => {
             <div className="card-header bg-light p-0">
               <nav>
                 <div className="nav nav-tabs" id="nav-tab" role="tablist">
-                  <button 
-                    className="nav-link active d-flex align-items-center" 
-                    id="nav-products-tab" 
-                    data-bs-toggle="tab" 
-                    data-bs-target="#nav-products" 
-                    type="button" 
-                    role="tab" 
-                    aria-controls="nav-products" 
+                  <button
+                    className="nav-link active d-flex align-items-center"
+                    id="nav-products-tab"
+                    data-bs-toggle="tab"
+                    data-bs-target="#nav-products"
+                    type="button"
+                    role="tab"
+                    aria-controls="nav-products"
                     aria-selected="true"
                   >
                     <i className="pi pi-box me-2"></i>
                     Produits disponibles
                     {loading && (
-                      <div className="spinner-border spinner-border-sm text-primary ms-2" role="status">
+                      <div
+                        className="spinner-border spinner-border-sm text-primary ms-2"
+                        role="status"
+                      >
                         <span className="visually-hidden">Chargement...</span>
                       </div>
                     )}
                   </button>
-                  <button 
-                    className="nav-link d-flex align-items-center" 
-                    id="nav-proformas-tab" 
-                    data-bs-toggle="tab" 
-                    data-bs-target="#nav-proformas" 
-                    type="button" 
-                    role="tab" 
-                    aria-controls="nav-proformas" 
+                  <button
+                    className="nav-link d-flex align-items-center"
+                    id="nav-proformas-tab"
+                    data-bs-toggle="tab"
+                    data-bs-target="#nav-proformas"
+                    type="button"
+                    role="tab"
+                    aria-controls="nav-proformas"
                     aria-selected="false"
                   >
                     <i className="pi pi-file-text me-2"></i>
                     Proformas associés
-                    {!loading && <span className="badge bg-primary ms-2">{proformas.length}</span>}
+                    {!loading && (
+                      <span className="badge bg-primary ms-2">
+                        {proformas.length}
+                      </span>
+                    )}
                     {loading && (
-                      <div className="spinner-border spinner-border-sm text-primary ms-2" role="status">
+                      <div
+                        className="spinner-border spinner-border-sm text-primary ms-2"
+                        role="status"
+                      >
                         <span className="visually-hidden">Chargement...</span>
                       </div>
                     )}
                   </button>
-                   
                 </div>
               </nav>
             </div>
@@ -501,10 +595,10 @@ const StockTransferScreen = () => {
             {/* Tab Content */}
             <div className="tab-content" id="nav-tabContent">
               {/* Produits disponibles Tab */}
-              <div 
-                className="tab-pane fade show active" 
-                id="nav-products" 
-                role="tabpanel" 
+              <div
+                className="tab-pane fade show active"
+                id="nav-products"
+                role="tabpanel"
                 aria-labelledby="nav-products-tab"
               >
                 <div className="card-body p-0">
@@ -515,12 +609,17 @@ const StockTransferScreen = () => {
                       className="form-control"
                       placeholder="Rechercher un produit..."
                       value={formData.search}
-                      onChange={(e) => handleFormChange('search', e.target.value)}
+                      onChange={(e) =>
+                        handleFormChange("search", e.target.value)
+                      }
                     />
                   </div>
-                  
+
                   {/* Products Table */}
-                  <div className="table-responsive" style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                  <div
+                    className="table-responsive"
+                    style={{ maxHeight: "400px", overflowY: "auto" }}
+                  >
                     <table className="table table-hover table-sm mb-0">
                       <thead className="table-light sticky-top">
                         <tr>
@@ -534,18 +633,25 @@ const StockTransferScreen = () => {
                       <tbody>
                         {products.length === 0 ? (
                           <tr>
-                            <td colSpan="5" className="text-center py-4 text-muted">
-                              {loading ? 'Chargement...' : 'Aucun produit disponible'}
+                            <td
+                              colSpan="5"
+                              className="text-center py-4 text-muted"
+                            >
+                              {loading
+                                ? "Chargement..."
+                                : "Aucun produit disponible"}
                             </td>
                           </tr>
                         ) : (
-                          products.map(product => (
+                          products.map((product) => (
                             <tr key={product.id}>
                               <td>
                                 <strong>{product.name}</strong>
                               </td>
                               <td>
-                                <span className="badge bg-info">{product.code}</span>
+                                <span className="badge bg-info">
+                                  {product.code}
+                                </span>
                               </td>
                               <td>{product.category?.name}</td>
                               <td>
@@ -572,27 +678,36 @@ const StockTransferScreen = () => {
               </div>
 
               {/* Proformas associés Tab */}
-              <div 
-                className="tab-pane fade" 
-                id="nav-proformas" 
-                role="tabpanel" 
+              <div
+                className="tab-pane fade"
+                id="nav-proformas"
+                role="tabpanel"
                 aria-labelledby="nav-proformas-tab"
               >
                 <div className="card-body">
                   {proformas.length > 0 ? (
-                    <div className="list-group list-group-flush" style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                    <div
+                      className="list-group list-group-flush"
+                      style={{ maxHeight: "400px", overflowY: "auto" }}
+                    >
                       {proformas.map((proforma) => {
                         const client = getClientInfo(proforma.client);
-                        const isValidated = validatedProformaIds.has(proforma.id);
-                        
+                        const isValidated = validatedProformaIds.has(
+                          proforma.id,
+                        );
+
                         return (
-                          <div key={proforma.id} className={`list-group-item px-0 py-2 border-0 border-bottom ${isValidated ? 'bg-light' : ''}`}>
+                          <div
+                            key={proforma.id}
+                            className={`list-group-item px-0 py-2 border-0 border-bottom ${isValidated ? "bg-light" : ""}`}
+                          >
                             <div className="d-flex justify-content-between align-items-start">
                               <div className="flex-grow-1">
                                 <div className="d-flex gap-4 align-items-center">
                                   <h6 className="mb-1">
                                     <i className="pi pi-file-text text-primary me-1"></i>
-                                    #PRO-{proforma.id.toString().padStart(6, '0')}
+                                    #PRO-
+                                    {proforma.id.toString().padStart(6, "0")}
                                     {isValidated && (
                                       <span className="badge bg-success ms-2">
                                         <i className="pi pi-check"></i>
@@ -601,7 +716,7 @@ const StockTransferScreen = () => {
                                   </h6>
                                   <p className="mb-1 text-muted small">
                                     <i className="pi pi-user me-1"></i>
-                                    {client.name || 'Client non spécifié'}
+                                    {client.name || "Client non spécifié"}
                                   </p>
                                 </div>
                                 <div className="d-flex gap-4">
@@ -611,7 +726,10 @@ const StockTransferScreen = () => {
                                     </span>
                                     {proforma.invoice_type && (
                                       <span className="badge bg-secondary">
-                                        {proforma.invoice_type.charAt(0).toUpperCase() + proforma.invoice_type.slice(1)}
+                                        {proforma.invoice_type
+                                          .charAt(0)
+                                          .toUpperCase() +
+                                          proforma.invoice_type.slice(1)}
                                       </span>
                                     )}
                                   </div>
@@ -639,28 +757,36 @@ const StockTransferScreen = () => {
                                 >
                                   {validatingProforma ? (
                                     <>
-                                      <div className="spinner-border spinner-border-sm me-2" role="status">
-                                        <span className="visually-hidden">Chargement...</span>
+                                      <div
+                                        className="spinner-border spinner-border-sm me-2"
+                                        role="status"
+                                      >
+                                        <span className="visually-hidden">
+                                          Chargement...
+                                        </span>
                                       </div>
                                       Validation...
                                     </>
                                   ) : isValidated ? (
                                     <>
-                                      <i className="pi pi-check me-2 text-success"></i> Validé
+                                      <i className="pi pi-check me-2 text-success"></i>{" "}
+                                      Validé
                                     </>
                                   ) : (
                                     <>
-                                      <i className="pi pi-check me-2"></i> Valider
+                                      <i className="pi pi-check me-2"></i>{" "}
+                                      Valider
                                     </>
                                   )}
                                 </button>
                               </div>
-
                             </div>
                             {proforma.note && (
                               <small className="text-muted">
                                 <i className="pi pi-comment me-1"></i>
-                                {proforma.note.length > 50 ? proforma.note.substring(0, 50) + '...' : proforma.note}
+                                {proforma.note.length > 50
+                                  ? proforma.note.substring(0, 50) + "..."
+                                  : proforma.note}
                               </small>
                             )}
                           </div>
@@ -669,8 +795,13 @@ const StockTransferScreen = () => {
                     </div>
                   ) : (
                     <div className="text-center py-4">
-                      <i className="pi pi-file-text text-muted" style={{ fontSize: '2rem' }}></i>
-                      <p className="text-muted mt-2 mb-0">Aucune proforma associée</p>
+                      <i
+                        className="pi pi-file-text text-muted"
+                        style={{ fontSize: "2rem" }}
+                      ></i>
+                      <p className="text-muted mt-2 mb-0">
+                        Aucune proforma associée
+                      </p>
                     </div>
                   )}
                 </div>
@@ -684,10 +815,13 @@ const StockTransferScreen = () => {
           <div className="card shadow-sm border-0 h-100">
             <div className="card-header bg-primary text-white d-flex justify-content-between align-items-center">
               {/* loading spinner */}
-              
+
               <h6 className="mb-0">
                 {validatingProforma && (
-                  <div className="spinner-border spinner-border-sm text-white me-2" role="status">
+                  <div
+                    className="spinner-border spinner-border-sm text-white me-2"
+                    role="status"
+                  >
                     <span className="visually-hidden">Chargement...</span>
                   </div>
                 )}
@@ -703,8 +837,7 @@ const StockTransferScreen = () => {
                     {validatedProformaIds.size} proforma(s)
                   </div>
                 )}
-                
-                
+
                 {selectedProducts.length > 0 && (
                   <button
                     className="btn btn-sm btn-light"
@@ -719,7 +852,10 @@ const StockTransferScreen = () => {
 
             {selectedProducts.length > 0 ? (
               <>
-                <div className="table-responsive" style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                <div
+                  className="table-responsive"
+                  style={{ maxHeight: "300px", overflowY: "auto" }}
+                >
                   <table className="table table-hover table-sm mb-0">
                     <thead className="table-light sticky-top">
                       <tr>
@@ -729,21 +865,34 @@ const StockTransferScreen = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {selectedProducts.map(product => {
+                      {selectedProducts.map((product) => {
                         const maxQty = product.stock_quantity || 0;
                         const currentQty = quantities[product.id];
-                        const hasInsufficient = hasInsufficientStock(product.id);
+                        const hasInsufficient = hasInsufficientStock(
+                          product.id,
+                        );
                         const is_proforma = product.is_proforma || false;
-                        
+
                         return (
-                          <tr key={`selected-${product.id}`} className={hasInsufficient ? 'border-danger bg-light' : ''}>
+                          <tr
+                            key={`selected-${product.id}`}
+                            className={
+                              hasInsufficient ? "border-danger bg-light" : ""
+                            }
+                          >
                             <td>
                               <div>
-                                <strong className={hasInsufficient ? 'text-danger' : ''}>
+                                <strong
+                                  className={
+                                    hasInsufficient ? "text-danger" : ""
+                                  }
+                                >
                                   {product.name}
                                 </strong>
                                 <br />
-                                <small className="text-muted">{product.code}</small>
+                                <small className="text-muted">
+                                  {product.code}
+                                </small>
                                 {hasInsufficient && (
                                   <div className="text-danger small">
                                     <i className="pi pi-exclamation-triangle me-1"></i>
@@ -752,17 +901,27 @@ const StockTransferScreen = () => {
                                 )}
                               </div>
                             </td>
-                            <td className="text-center" style={{ width: '120px' }}>
+                            <td
+                              className="text-center"
+                              style={{ width: "120px" }}
+                            >
                               <input
                                 type="number"
-                                className={`form-control form-control-sm text-center ${hasInsufficient ? 'border-danger' : ''}`}
-                                style={{ width: '70px', display: 'inline-block' }}
+                                className={`form-control form-control-sm text-center ${hasInsufficient ? "border-danger" : ""}`}
+                                style={{
+                                  width: "70px",
+                                  display: "inline-block",
+                                }}
                                 min="1"
                                 value={currentQty}
                                 disabled={is_proforma}
-                                onChange={(e) => updateQuantity(product.id, e.target.value)}
+                                onChange={(e) =>
+                                  updateQuantity(product.id, e.target.value)
+                                }
                               />
-                              <small className={`d-block ${hasInsufficient ? 'text-danger' : 'text-muted'}`}>
+                              <small
+                                className={`d-block ${hasInsufficient ? "text-danger" : "text-muted"}`}
+                              >
                                 Max: {maxQty}
                               </small>
                             </td>
@@ -786,11 +945,13 @@ const StockTransferScreen = () => {
                 <div className="card-footer bg-light">
                   <div className="d-flex justify-content-between align-items-center">
                     <div>
-                      <strong>Total:</strong> {selectedProducts.length} produit(s)
+                      <strong>Total:</strong> {selectedProducts.length}{" "}
+                      produit(s)
                       {productsWithInsufficientStock.length > 0 && (
                         <div className="text-danger small">
                           <i className="pi pi-exclamation-triangle me-1"></i>
-                          {productsWithInsufficientStock.length} produit(s) avec quantité insuffisante
+                          {productsWithInsufficientStock.length} produit(s) avec
+                          quantité insuffisante
                         </div>
                       )}
                     </div>
@@ -801,8 +962,13 @@ const StockTransferScreen = () => {
                     >
                       {transferLoading ? (
                         <>
-                          <div className="spinner-border spinner-border-sm me-2" role="status">
-                            <span className="visually-hidden">Chargement...</span>
+                          <div
+                            className="spinner-border spinner-border-sm me-2"
+                            role="status"
+                          >
+                            <span className="visually-hidden">
+                              Chargement...
+                            </span>
                           </div>
                           Transfert en cours...
                         </>
@@ -819,7 +985,10 @@ const StockTransferScreen = () => {
             ) : (
               <div className="card-body text-center py-5">
                 <div className="text-muted mb-3">
-                  <i className="pi pi-shopping-cart" style={{ fontSize: '2rem' }}></i>
+                  <i
+                    className="pi pi-shopping-cart"
+                    style={{ fontSize: "2rem" }}
+                  ></i>
                 </div>
                 <p className="text-muted mb-0">Aucun produit sélectionné</p>
                 <small className="text-muted">
@@ -837,12 +1006,15 @@ const StockTransferScreen = () => {
           <div className="col-12">
             <div className="alert alert-info">
               <i className="pi pi-info-circle me-2"></i>
-              <strong>Résumé du transfert:</strong> De "{getStockName(formData.stockSource)}" vers "{getStockName(formData.destinationStockId)}"
+              <strong>Résumé du transfert:</strong> De "
+              {getStockName(formData.stockSource)}" vers "
+              {getStockName(formData.destinationStockId)}"
               {validatedProformaIds.size > 0 && (
                 <div className="mt-2">
                   <small>
                     <i className="pi pi-check me-1"></i>
-                    {validatedProformaIds.size} proforma(s) sera/seront validé(s) après le transfert
+                    {validatedProformaIds.size} proforma(s) sera/seront
+                    validé(s) après le transfert
                   </small>
                 </div>
               )}

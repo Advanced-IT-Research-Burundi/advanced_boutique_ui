@@ -3,15 +3,26 @@ import { Toast } from 'primereact/toast';
 import ApiService from '../../services/api.js';
 import { useParams, useNavigate } from 'react-router-dom';
 
+// Types de mouvements d'entrée disponibles
+const ENTRY_MOVEMENT_TYPES = [
+  { code: 'EN', label: 'Entrée Normales' },
+  { code: 'ER', label: 'Entrée Retour' },
+  { code: 'EI', label: 'Entrée Inventaire' },
+  { code: 'EAJ', label: 'Entrées Ajustement' },
+  { code: 'ET', label: 'Entrées Transfert' },
+  { code: 'EAU', label: 'Entrées Autres' },
+];
+
 const EntreMultipleScreen = () => {
   const { id: stockId } = useParams();
   const navigate = useNavigate();
-  
+
   const [stock, setStock] = useState(null);
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [quantities, setQuantities] = useState({});
   const [prices, setPrices] = useState({});
+  const [movementType, setMovementType] = useState('EN');
   const [loading, setLoading] = useState({
     initial: false,
     products: false,
@@ -163,6 +174,7 @@ const EntreMultipleScreen = () => {
     try {
       const response = await ApiService.post('/api/stock-products/bulk-entry', {
         stock_id: stockId,
+        movement_type: movementType,
         entries: validEntries
       });
 
@@ -178,7 +190,7 @@ const EntreMultipleScreen = () => {
     } finally {
       setLoading(prev => ({ ...prev, submitting: false }));
     }
-  }, [quantities, prices, stockId, resetQuantities, showToast, search, selectedCategory, loadProducts]);
+  }, [quantities, prices, stockId, movementType, resetQuantities, showToast, search, selectedCategory, loadProducts]);
 
   const stats = useMemo(() => {
     const totalEntries = Object.values(quantities).reduce((sum, qty) => sum + qty, 0);
@@ -224,7 +236,9 @@ const EntreMultipleScreen = () => {
               <i className="pi pi-plus-circle me-2"></i>
               Entrée Multiple - {loading.initial ? <div className="spinner-border spinner-border-sm"></div> : stock.name}
             </h4>
-            <small className="text-muted">Saisie en lot des quantités et prix</small>
+            <small className="text-muted">
+              Saisie en lot des quantités et prix - <span className="badge bg-primary">{ENTRY_MOVEMENT_TYPES.find(t => t.code === movementType)?.label}</span>
+            </small>
           </div>
           <button 
             onClick={() => navigate('/stocks')}
@@ -238,7 +252,23 @@ const EntreMultipleScreen = () => {
 
       <div className="bg-light border-bottom p-3">
         <div className="row g-3 align-items-end">
-          <div className="col-md-3">
+          <div className="col-md-2">
+            <label className="form-label small fw-bold">Type de mouvement</label>
+            <select
+              className="form-select border-primary"
+              value={movementType}
+              onChange={(e) => setMovementType(e.target.value)}
+              disabled={loading.submitting}
+            >
+              {ENTRY_MOVEMENT_TYPES.map(type => (
+                <option key={type.code} value={type.code}>
+                  {type.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="col-md-2">
             <label className="form-label small">Rechercher un produit</label>
             <input
               type="text"
@@ -250,10 +280,10 @@ const EntreMultipleScreen = () => {
               disabled={loading.products}
             />
           </div>
-          
+
           <div className="col-md-2">
             <label className="form-label small">Catégorie</label>
-            <select 
+            <select
               className="form-select"
               value={selectedCategory}
               onChange={(e) => handleCategoryChange(e.target.value)}

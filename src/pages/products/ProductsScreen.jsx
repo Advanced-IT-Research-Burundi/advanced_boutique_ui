@@ -6,6 +6,7 @@ import { API_CONFIG } from '../../services/config.js';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchApiData } from '../../stores/slicer/apiDataSlicer.js';
 import { useNavigate } from 'react-router-dom';
+import ProductImportModal from './ProductImportModal.jsx';
 
 const ProductScreen = () => {
   const intl = useIntl();
@@ -25,6 +26,7 @@ const ProductScreen = () => {
     to: 0
   });
   const [deleteModal, setDeleteModal] = useState({ show: false, productId: null });
+  const [showImportModal, setShowImportModal] = useState(false);
   const toast = useRef(null);
   const navigate = useNavigate();
 
@@ -223,7 +225,15 @@ const ProductScreen = () => {
               <i className="pi pi-file-pdf me-1"></i>
               {intl.formatMessage({ id: "product.pdf" })}
               </a>
-             
+
+              <button
+                className="btn btn-outline-success"
+                onClick={() => setShowImportModal(true)}
+              >
+                <i className="pi pi-file-excel me-1"></i>
+                {intl.formatMessage({ id: "product.import" })}
+              </button>
+
               <a onClick={()=> navigate('/products/create')} className="btn btn-primary">
                 <i className="pi pi-plus-circle me-1"></i>{intl.formatMessage({id: "product.newProduct"})}
               </a>
@@ -515,12 +525,22 @@ const ProductScreen = () => {
               </div>
             </div>
           </div>
-          <div 
-            className="modal-backdrop show" 
+          <div
+            className="modal-backdrop show"
             onClick={() => setDeleteModal({ show: false, productId: null })}
           ></div>
         </>
       )}
+
+      {/* Import Modal */}
+      <ProductImportModal
+        show={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        onSuccess={() => {
+          showToast('success', intl.formatMessage({ id: 'productImport.importSuccess' }));
+          loadProducts(pagination.current_page);
+        }}
+      />
     </div>
   );
 };

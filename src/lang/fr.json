@@ -926,8 +926,34 @@
   "unitEdit.success": "Succès",
   "unitEdit.validations.nameRequired": "Le nom est requis",
   "unitEdit.validations.minLength": "Minimum {min} caractères",
-  "unitEdit.validations.maxLength": "Maximum {max} caractères"
+  "unitEdit.validations.maxLength": "Maximum {max} caractères",
 
+  "product.import": "Importer Excel",
 
+  "productImport.title": "Importation de produits depuis Excel",
+  "productImport.instructions": "Instructions",
+  "productImport.instructionsText": "Téléchargez le modèle Excel, remplissez-le avec vos produits, puis importez-le. Les produits existants (même code) seront mis à jour.",
+  "productImport.requiredColumns": "Colonnes obligatoires",
+  "productImport.optionalColumns": "Colonnes optionnelles",
+  "productImport.downloadTemplate": "Télécharger le modèle Excel",
+  "productImport.selectFile": "Sélectionner un fichier",
+  "productImport.clearFile": "Supprimer",
+  "productImport.processing": "Traitement en cours...",
+  "productImport.rows": "ligne(s)",
+  "productImport.preview": "Aperçu des données",
+  "productImport.showingFirst50": "Affichage des 50 premières lignes uniquement",
+  "productImport.close": "Fermer",
+  "productImport.import": "Importer",
+  "productImport.importing": "Importation...",
+  "productImport.importResult": "Résultat de l'importation",
+  "productImport.productsImported": "produit(s) importé(s)",
+  "productImport.productsFailed": "produit(s) en erreur",
+  "productImport.errors": "Erreurs",
+  "productImport.invalidFileType": "Veuillez sélectionner un fichier Excel valide (.xlsx ou .xls)",
+  "productImport.readError": "Erreur lors de la lecture du fichier",
+  "productImport.sheetError": "Erreur lors du changement de feuille",
+  "productImport.noDataToImport": "Aucune donnée à importer",
+  "productImport.importError": "Erreur lors de l'importation",
+  "productImport.importSuccess": "Importation réussie"
 
 }

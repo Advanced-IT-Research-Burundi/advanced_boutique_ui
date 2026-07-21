@@ -470,10 +470,14 @@ const StockShowScreen = () => {
                   
                   {proformas.length > 5 && (
                     <div className="text-center mt-3">
-                      <a href={`/proformas?stock_id=${stock.id}`} className="btn btn-sm btn-outline-info">
+                      <button
+                        type="button"
+                        onClick={() => navigate(`/proforma?stock_id=${stock.id}`)}
+                        className="btn btn-sm btn-outline-info"
+                      >
                         <i className="pi pi-arrow-right me-1"></i>
                         Voir tous les proformas ({proformas.length})
-                      </a>
+                      </button>
                     </div>
                   )}
                 </>

@@ -1,7 +1,7 @@
 export const formatCurrency = (amount) => {
   return new Intl.NumberFormat('fr-FR', {
     style: 'currency',
-    currency: 'XOF',
+    currency: 'BIF',
     minimumFractionDigits: 0,
   }).format(amount);
 };

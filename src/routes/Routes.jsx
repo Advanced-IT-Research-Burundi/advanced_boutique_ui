@@ -146,6 +146,7 @@ const protectedRoutes = [
   { path: '/localsales/:id/edit', component: LocalSalesEditScreen},
   //proforma
   { path: '/proforma',component : ProformaScreen},
+  { path: '/proformas',component : ProformaScreen},
   { path: '/product/pdf',component : ProductPdf},
   { path: '/proforma/create', component: ProformaCreateScreen },
   { path: '/proforma/:id', component: ProformaShowScreen },

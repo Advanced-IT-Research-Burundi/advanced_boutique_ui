@@ -5,11 +5,13 @@ import ApiService from '../../services/api.js';
 import StatCard from '../../components/Card/StatCard.jsx';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchApiData } from '../../stores/slicer/apiDataSlicer.js';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 
 
 const ProformaScreen = () => {
   const intl = useIntl();
+  const [searchParams] = useSearchParams();
+  const stockId = searchParams.get('stock_id') || '';
   const [proformas, setProformas] = useState([]);
   const [loading] = useState(false);
   const [stats, setStats] = useState({});
@@ -19,7 +21,8 @@ const ProformaScreen = () => {
     search: '',
     date_from: '',
     date_to: '',
-    status: ''
+    status: '',
+    stock_id: stockId
   });
   const [pagination, setPagination] = useState({
     current_page: 1,
@@ -38,8 +41,9 @@ const ProformaScreen = () => {
   }));
 
   useEffect(() => {
-    loadProformas();
-  }, []);
+    setFilters(prev => ({ ...prev, stock_id: stockId }));
+    loadProformas(1, { stock_id: stockId });
+  }, [stockId]);
   
   useEffect(() => {
     if (data) {
@@ -55,10 +59,10 @@ const ProformaScreen = () => {
     }
   }, [data]);
 
-  const loadProformas = async (page = 1) => {
+  const loadProformas = async (page = 1, overrides = {}) => {
     try {
     
-      const params = { page, ...filters };
+      const params = { page, ...filters, ...overrides };
     
       dispatch(fetchApiData({ url: '/api/proformas', itemKey: 'proformas', method: 'GET', params }));
        
@@ -78,8 +82,9 @@ const ProformaScreen = () => {
   };
 
   const handleReset = () => {
-    setFilters({ search: '', date_from: '', date_to: '', status: '' });
-    setTimeout(() => loadProformas(1), 0);
+    const resetFilters = { search: '', date_from: '', date_to: '', status: '', stock_id: stockId };
+    setFilters(resetFilters);
+    setTimeout(() => loadProformas(1, resetFilters), 0);
   };
 
   const handleSelectAll = (checked) => {

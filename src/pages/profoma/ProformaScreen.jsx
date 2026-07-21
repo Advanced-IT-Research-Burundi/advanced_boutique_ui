@@ -150,6 +150,36 @@ const ProformaScreen = () => {
     return <span className="badge bg-danger"><i className="pi pi-times-circle me-1"></i>{intl.formatMessage({id: "proforma.unpaid"})}</span>;
   };
 
+  const isTransferProforma = (proforma) => {
+    const isValid = proforma.is_valid === true || proforma.is_valid === 1 || proforma.is_valid === '1';
+    return Boolean(proforma.stock_recevant_id && proforma.transfer_code && isValid);
+  };
+
+  const getProformaTypeBadge = (proforma) => {
+    if (!isTransferProforma(proforma)) {
+      return (
+        <span className="badge bg-light text-dark border">
+          <i className="pi pi-file me-1"></i>Simple
+        </span>
+      );
+    }
+
+    const stockRecevant = proforma.stock_recevant || proforma.stockRecevant;
+
+    return (
+      <div>
+        <span className="badge bg-info text-dark">
+          <i className="pi pi-sync me-1"></i>Transfert
+        </span>
+        <br />
+        <small className="text-muted">
+          {proforma.transfer_code}
+          {stockRecevant?.name ? ` - ${stockRecevant.name}` : ''}
+        </small>
+      </div>
+    );
+  };
+
   const getClientInfo = (clientData) => {
     try {
       const client = typeof clientData === 'string' ? JSON.parse(clientData) : clientData;
@@ -380,6 +410,7 @@ const ProformaScreen = () => {
                   <th className="border-0 px-2 py-2">{intl.formatMessage({id: "proforma.remaining"})}</th>
                   <th className="border-0 px-2 py-2">{intl.formatMessage({id: "proforma.status"})}</th>
                   <th className="border-0 px-2 py-2">{intl.formatMessage({id: "proforma.stock"})}</th>
+                  <th className="border-0 px-2 py-2">Type</th>
                   <th className="border-0 px-2 py-2">{intl.formatMessage({id: "proforma.invoice"})}</th>
                   <th className="border-0 px-2 py-2">{intl.formatMessage({id: "proforma.actions"})}</th>
                 </tr>
@@ -387,7 +418,7 @@ const ProformaScreen = () => {
               <tbody>
                 {loading ? (
                   <tr>
-                    <td colSpan="9" className="text-center py-5">
+                    <td colSpan="10" className="text-center py-5">
                       <div className="spinner-border text-primary" role="status">
                         <span className="visually-hidden">{intl.formatMessage({id: "proforma.loading"})}</span>
                       </div>
@@ -395,7 +426,7 @@ const ProformaScreen = () => {
                   </tr>
                 ) : proformas.length === 0 ? (
                   <tr>
-                    <td colSpan="9" className="text-center py-5">
+                    <td colSpan="10" className="text-center py-5">
                       <div className="text-muted">
                         <i className="pi pi-inbox display-4 d-block mb-3"></i>
                         <h5>{intl.formatMessage({id: "proforma.noProformasFound"})}</h5>
@@ -446,7 +477,7 @@ const ProformaScreen = () => {
                         </td>
                         <td className="px-2">
                           {proforma.due_amount > 0 ? (
-                            <span className="text-warning">{formatCurrency(proforma.due_amount)}</span>
+                            <span style={{color:"#b87b02", fontWeight: "bold"}} >{formatCurrency(proforma.due_amount)}</span>
                           ) : (
                             <span className="text-success">0 FBU</span>
                           )}
@@ -455,6 +486,7 @@ const ProformaScreen = () => {
                         <td className="px-2">
                           <small className="text-muted">{proforma.stock?.name || intl.formatMessage({id: "proforma.notSpecified"})}</small>
                         </td>
+                        <td className="px-2">{getProformaTypeBadge(proforma)}</td>
                         <td className="px-2">
                           <strong>{proforma.invoice_type || intl.formatMessage({id: "proforma.notValid"})}</strong>
                         </td>

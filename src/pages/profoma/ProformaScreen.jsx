@@ -499,22 +499,27 @@ const ProformaScreen = () => {
                             >
                               <i className="pi pi-eye"></i>
                             </Link>
-                            <Link 
-                              to={`/proforma/${proforma.id}/edit`} 
-                              className="btn btn-sm btn-outline-success" 
-                              title={intl.formatMessage({id: "proforma.edit"})}
-                            >
-                              <i className="pi pi-pencil"></i>
-                            </Link>
+                           {!isTransferProforma(proforma) && (
+                            <>
+                                  <Link
+                                    to={`/proforma/${proforma.id}/edit`}
+                                    className="btn btn-sm btn-outline-success"
+                                    title={intl.formatMessage({ id: "proforma.edit" })}
+                                  >
+                                    <i className="pi pi-pencil"></i>
+                                  </Link>
+                                  <button 
+                                    type="button" 
+                                    className="btn btn-sm btn-outline-danger" 
+                                    title={intl.formatMessage({id: "proforma.delete"})}
+                                    onClick={() => setDeleteModal({ show: true, proformaId: proforma.id })}
+                                  >
+                                    <i className="pi pi-trash"></i>
+                                  </button>
+                            </>
+                                )}
                             
-                            <button 
-                              type="button" 
-                              className="btn btn-sm btn-outline-danger" 
-                              title={intl.formatMessage({id: "proforma.delete"})}
-                              onClick={() => setDeleteModal({ show: true, proformaId: proforma.id })}
-                            >
-                              <i className="pi pi-trash"></i>
-                            </button>
+                            
                           </div>
                         </td>
                       </tr>

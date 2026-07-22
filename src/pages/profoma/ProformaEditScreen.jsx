@@ -23,6 +23,9 @@ const ProformaEditScreen = () => {
   const toast = useRef(null);
   const clientSearchRef = useRef(null);
   const productSearchRef = useRef(null);
+  const clientSearchTimeoutRef = useRef(null);
+  const didInitializeRef = useRef(false);
+  const categoriesLoadedForStockRef = useRef(null);
 
   const [saving, setSaving] = useState(false);
   const [dataLoading, setDataLoading] = useState(true);
@@ -54,11 +57,19 @@ const ProformaEditScreen = () => {
   const [profoma, setProfoma] = useState(null);
 
   useEffect(() => {
+    if (didInitializeRef.current) return;
+    didInitializeRef.current = true;
     initializeData();
+
+    return () => {
+      if (clientSearchTimeoutRef.current) {
+        clearTimeout(clientSearchTimeoutRef.current);
+      }
+    };
   }, []);
 
   useEffect(() => {
-    if (selectedStock) {
+    if (selectedStock && categoriesLoadedForStockRef.current !== String(selectedStock)) {
       loadCategories();
     }
   }, [selectedStock]);
@@ -66,7 +77,7 @@ const ProformaEditScreen = () => {
   const initializeData = async () => {
     try {
       setDataLoading(true);
-      await Promise.all([loadInitialData(), loadProfoma()]);
+      await loadEditData();
     } catch (error) {
       showToast("error", "Erreur lors du chargement des données");
     } finally {
@@ -74,10 +85,39 @@ const ProformaEditScreen = () => {
     }
   };
 
-  const initializeProformaData = async (proformaData) => {
+  const parseStoredJson = (value, fallback) => {
+    if (Array.isArray(value) || (value && typeof value === 'object')) {
+      return value;
+    }
+
+    if (typeof value === 'string' && value.trim() !== '') {
+      try {
+        return JSON.parse(value);
+      } catch {
+        return fallback;
+      }
+    }
+
+    return fallback;
+  };
+
+  const buildCartItem = (item) => ({
+    product_id: item.product_id,
+    name: item.name || item.product_name || `Produit ${item.product_id}`,
+    code: item.code || `PROD${item.product_id}`,
+    quantity: parseFloat(item.quantity) || 1,
+    sale_price: parseFloat(item.sale_price) || 0,
+    discount: 0,
+    discount_fbu: parseFloat(item.discount) || 0,
+    unit: item.unit || "pcs",
+    available_stock: parseFloat(item.available_stock) || 0,
+    image: item.image || null
+  });
+
+  const initializeProformaData = async (proformaData, enrichedItems = null, client = null) => {
   try {
-    const proformaItems = JSON.parse(proformaData.proforma_items || '[]');
-    const clientData = JSON.parse(proformaData.client || '{}');
+    const proformaItems = enrichedItems || parseStoredJson(proformaData.proforma_items, []);
+    const clientData = client || parseStoredJson(proformaData.client, {});
 
     setSelectedStock(proformaData.stock_id);
     setInvoiceType(proformaData.invoice_type || "PROFORMA");
@@ -90,50 +130,7 @@ const ProformaEditScreen = () => {
       setClientSearch(clientData.name || clientData.societe || "");
     }
 
-    // Utiliser Promise.all pour récupérer toutes les infos produit
-    const cartItems = await Promise.all(
-      proformaItems.map(async (item) => {
-        try {
-          console.log("proforma stock id: "+proformaData.stock_id);
-          const response = await ApiService.get(`/api/proformas/products/${item.product_id}/stock?stock_id=${proformaData.stock_id}`);
-          const result =  response.data;
-          if (!response.success) {
-            throw new Error(result.message || 'Erreur API');
-
-          }
-
-          const { product, available_stock } = result;
-
-          return {
-            product_id: product.id,
-            name: product.product_name || `Produit ${product.id}`,
-            code: product?.product?.code || `PROD${product.id}`,
-            quantity: parseFloat(item.quantity) || 1,
-            sale_price: parseFloat(item.sale_price) || 0,
-            discount: 0,
-            discount_fbu: parseFloat(item.discount) || 0,
-            unit: product.unit || "pcs",
-            available_stock: available_stock || 0,
-            image: product.image || null
-          };
-        } catch (err) {
-          console.error(`Erreur pour le produit ID ${item.product_id}:`, err);
-          // fallback
-          return {
-            product_id: item.product_id,
-            name: `Produit ${item.product_id}`,
-            code: `PROD${item.product_id}`,
-            quantity: parseFloat(item.quantity) || 1,
-            sale_price: parseFloat(item.sale_price) || 0,
-            discount: 0,
-            discount_fbu: parseFloat(item.discount) || 0,
-            unit: "pcs",
-            available_stock: 0,
-            image: null
-          };
-        }
-      })
-    );
+    const cartItems = proformaItems.map(buildCartItem);
 
     loadCart(cartItems);
     showToast("success", "Données chargées avec succès");
@@ -142,28 +139,22 @@ const ProformaEditScreen = () => {
     showToast("error", "Erreur lors du chargement des données: " + error.message);
   }
 };
-
-
-  const loadProfoma = async () => {
+  const loadEditData = async () => {
     try {
-      const response = await ApiService.get(`/api/proformas/${id}`);
+      const response = await ApiService.get(`/api/proformas/${id}/edit-data`);
       if (response.success) {
+        setStocks(response.data.stocks || []);
+        setCategories(response.data.categories || {});
         setProfoma(response.data.proforma);
-        await initializeProformaData(response.data.proforma);
+        categoriesLoadedForStockRef.current = String(response.data.proforma?.stock_id || '');
+        await initializeProformaData(
+          response.data.proforma,
+          response.data.items || null,
+          response.data.client || null
+        );
       }
     } catch (error) {
       showToast("error", "Erreur lors du chargement de la proforma");
-    }
-  };
-
-  const loadInitialData = async () => {
-    try {
-      const response = await ApiService.get("/api/proformas/create-data");
-      if (response.success) {
-        setStocks(response.data.stocks || []);
-      }
-    } catch (error) {
-      showToast("error", "Erreur lors du chargement des données initiales");
     }
   };
 
@@ -175,6 +166,7 @@ const ProformaEditScreen = () => {
       const response = await ApiService.get(`/api/proformas/categories/${selectedStock}`);
       if (response.success) {
         setCategories(response.data.categories || {});
+        categoriesLoadedForStockRef.current = String(selectedStock);
       }
     } catch (error) {
       showToast("error", "Erreur lors du chargement des catégories");
@@ -233,7 +225,14 @@ const ProformaEditScreen = () => {
 
   const handleClientSearch = (value) => {
     setClientSearch(value);
-    searchClients(value);
+
+    if (clientSearchTimeoutRef.current) {
+      clearTimeout(clientSearchTimeoutRef.current);
+    }
+
+    clientSearchTimeoutRef.current = setTimeout(() => {
+      searchClients(value);
+    }, 300);
   };
 
   const handleSelectClient = (client) => {

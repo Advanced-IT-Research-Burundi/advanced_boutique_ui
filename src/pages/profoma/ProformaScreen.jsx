@@ -32,6 +32,12 @@ const ProformaScreen = () => {
     to: 0
   });
   const [deleteModal, setDeleteModal] = useState({ show: false, proformaId: null });
+  const [cancelTransferModal, setCancelTransferModal] = useState({
+    show: false,
+    proforma: null,
+    commentaire: ''
+  });
+  const [cancelTransferLoading, setCancelTransferLoading] = useState(false);
   const toast = useRef(null);
 
   const dispatch = useDispatch();
@@ -120,6 +126,30 @@ const ProformaScreen = () => {
       showToast('error', error.message || intl.formatMessage({id: "proforma.deleteError"}));
     }
     setDeleteModal({ show: false, proformaId: null });
+  };
+
+  const handleCancelTransfer = async () => {
+    if (!cancelTransferModal.proforma) return;
+
+    try {
+      setCancelTransferLoading(true);
+      const response = await ApiService.post(
+        `/api/stock-transfers/proformas/${cancelTransferModal.proforma.id}/cancel-transfer`,
+        { commentaire: cancelTransferModal.commentaire }
+      );
+
+      if (response.success) {
+        showToast('success', response.message || 'Transfert annulé avec succès');
+        setCancelTransferModal({ show: false, proforma: null, commentaire: '' });
+        loadProformas(pagination.current_page);
+      } else {
+        showToast('error', response.message || "Erreur lors de l'annulation du transfert");
+      }
+    } catch (error) {
+      showToast('error', error.message || "Erreur lors de l'annulation du transfert");
+    } finally {
+      setCancelTransferLoading(false);
+    }
   };
 
   const showToast = (severity, detail) => {
@@ -499,6 +529,20 @@ const ProformaScreen = () => {
                             >
                               <i className="pi pi-eye"></i>
                             </Link>
+                           {isTransferProforma(proforma) && (
+                              <button
+                                type="button"
+                                className="btn btn-sm btn-outline-warning"
+                                title="Annuler le transfert"
+                                onClick={() => setCancelTransferModal({
+                                  show: true,
+                                  proforma,
+                                  commentaire: ''
+                                })}
+                              >
+                                <i className="pi pi-undo"></i>
+                              </button>
+                            )}
                            {!isTransferProforma(proforma) && (
                             <>
                                   <Link
@@ -543,6 +587,86 @@ const ProformaScreen = () => {
           </div>
         )}
       </div>
+
+      {/* Cancel Transfer Modal */}
+      {cancelTransferModal.show && (
+        <>
+          <div className="modal show d-block" tabIndex="-1">
+            <div className="modal-dialog">
+              <div className="modal-content">
+                <div className="modal-header bg-warning">
+                  <h5 className="modal-title">
+                    <i className="pi pi-undo me-2"></i>Annuler le transfert
+                  </h5>
+                  <button
+                    type="button"
+                    className="btn-close"
+                    onClick={() => setCancelTransferModal({ show: false, proforma: null, commentaire: '' })}
+                    disabled={cancelTransferLoading}
+                  ></button>
+                </div>
+                <div className="modal-body">
+                  <p>
+                    Voulez-vous annuler le transfert du proforma{' '}
+                    <strong>
+                      #PRO-{cancelTransferModal.proforma?.id?.toString().padStart(6, '0')}
+                    </strong>
+                    ?
+                  </p>
+                  <label className="form-label">Commentaire</label>
+                  <textarea
+                    className="form-control"
+                    rows="3"
+                    placeholder="Commentaire optionnel"
+                    value={cancelTransferModal.commentaire}
+                    onChange={(e) => setCancelTransferModal(prev => ({
+                      ...prev,
+                      commentaire: e.target.value
+                    }))}
+                    disabled={cancelTransferLoading}
+                  ></textarea>
+                </div>
+                <div className="modal-footer">
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={() => setCancelTransferModal({ show: false, proforma: null, commentaire: '' })}
+                    disabled={cancelTransferLoading}
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-warning"
+                    onClick={handleCancelTransfer}
+                    disabled={cancelTransferLoading}
+                  >
+                    {cancelTransferLoading ? (
+                      <>
+                        <span className="spinner-border spinner-border-sm me-1"></span>
+                        Annulation...
+                      </>
+                    ) : (
+                      <>
+                        <i className="pi pi-undo me-1"></i>
+                        Confirmer
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            className="modal-backdrop show"
+            onClick={() => {
+              if (!cancelTransferLoading) {
+                setCancelTransferModal({ show: false, proforma: null, commentaire: '' });
+              }
+            }}
+          ></div>
+        </>
+      )}
 
       {/* Delete Modal */}
       {deleteModal.show && (

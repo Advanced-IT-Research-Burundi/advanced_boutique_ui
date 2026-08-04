@@ -125,6 +125,34 @@ const ProductScreen = () => {
     return imagePath.startsWith('http') ? imagePath : `/storage/${imagePath}`;
   };
 
+  const isNumericValue = (value) => value !== null && value !== '' && !Number.isNaN(Number(value));
+
+  const getCategoryName = (product) => {
+    if (product.category && typeof product.category === 'object') {
+      return product.category.name;
+    }
+
+    if (product.category && !isNumericValue(product.category)) {
+      return product.category;
+    }
+
+    const categoryId = product.category_id || product.category;
+    const category = categories.find(item => String(item.id) === String(categoryId));
+    return category?.name;
+  };
+
+  const getUnitName = (product) => {
+    if (product.unit && typeof product.unit === 'object') {
+      return product.unit.name || product.unit.abbreviation;
+    }
+
+    if (product.unit && !isNumericValue(product.unit)) {
+      return product.unit;
+    }
+
+    return null;
+  };
+
   const Pagination = () => {
     if (pagination.last_page <= 1) return null;
 
@@ -359,7 +387,11 @@ const ProductScreen = () => {
                     </td>
                   </tr>
                 ) : (
-                  products.map((product) => (
+                  products.map((product) => {
+                    const categoryName = getCategoryName(product);
+                    const unitName = getUnitName(product);
+
+                    return (
                     <tr key={product.id}>
                       <td className="px-4">
                         {getImageUrl(product.image) ? (
@@ -373,17 +405,18 @@ const ProductScreen = () => {
                               e.target.nextSibling.style.display = 'flex';
                             }}
                           />
-                        ) : null}
-                        <div 
-                          className="bg-light rounded d-flex align-items-center justify-content-center"
-                          style={{ 
-                            width: '40px', 
-                            height: '40px',
-                            display: getImageUrl(product.image) ? 'none' : 'flex'
-                          }}
-                        >
-                          <i className="pi pi-image text-muted"></i>
-                        </div>
+                        ) : (
+                          <div 
+                            className="bg-light rounded d-flex align-items-center justify-content-center"
+                            style={{ 
+                              width: '40px', 
+                              height: '40px',
+                              display: 'flex'
+                            }}
+                          >
+                            <i className="pi pi-image text-muted"></i>
+                          </div>
+                        )}
                       </td>
                       <td className="px-4">
                         <span className="badge bg-info text-white">{product.code}</span>
@@ -407,8 +440,8 @@ const ProductScreen = () => {
                         </div>
                       </td>
                       <td className="px-4">
-                        {product.category ? (
-                          <span className="badge bg-secondary">{product.category.name}</span>
+                        {categoryName ? (
+                          <span className="badge bg-secondary">{categoryName}</span>
                         ) : (
                           <span className="text-muted">{intl.formatMessage({id: "product.uncategorized"})}</span>
                         )}
@@ -429,7 +462,11 @@ const ProductScreen = () => {
                         </span>
                       </td>
                       <td className="px-4">
-                        <span className="badge bg-info text-white">{ product?.unit }</span>
+                        {unitName ? (
+                          <span className="badge bg-info text-white">{unitName}</span>
+                        ) : (
+                          <span className="text-muted">{intl.formatMessage({id: "product.notAssigned"})}</span>
+                        )}
                       </td>
                       <td className="px-4">
                         <span className="badge bg-warning text-dark">{product.alert_quantity}</span>
@@ -466,7 +503,8 @@ const ProductScreen = () => {
                         </div>
                       </td>
                     </tr>
-                  ))
+                    );
+                  })
                 )}
               </tbody>
             </table>

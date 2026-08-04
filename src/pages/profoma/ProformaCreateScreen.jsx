@@ -604,7 +604,7 @@ const ProformaCreateScreen = () => {
                             <div className="d-flex align-items-start">
                               {product.image ? (
                                 <img
-                                  src={`/storage/${product.image}`}
+                                  src={`${product.image}`}
                                   alt={product.name}
                                   className="rounded me-3"
                                   style={{
@@ -802,7 +802,7 @@ const ProformaCreateScreen = () => {
                             <td className="text-center">
                               {item.image ? (
                                 <img
-                                  src={`/storage/${item.image}`}
+                                  src={`${item.image}`}
                                   alt="Product"
                                   className="rounded"
                                   style={{

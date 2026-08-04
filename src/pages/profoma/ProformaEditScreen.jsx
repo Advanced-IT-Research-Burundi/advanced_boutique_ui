@@ -608,7 +608,7 @@ const ProformaEditScreen = () => {
                             <div className="d-flex align-items-start">
                               {product.image ? (
                                 <img
-                                  src={`/storage/${product.image}`}
+                                  src={`${product.image}`}
                                   alt={product.name}
                                   className="rounded me-3"
                                   style={{ width: "50px", height: "50px", objectFit: "cover" }}
@@ -741,7 +741,7 @@ const ProformaEditScreen = () => {
                               <td className="text-center">
                                 {item.image ? (
                                   <img
-                                    src={`/storage/${item.image}`}
+                                    src={`${item.image}`}
                                     alt="Product"
                                     className="rounded"
                                     style={{ width: "40px", height: "40px", objectFit: "cover" }}

@@ -124,34 +124,53 @@ const ProductCreateScreen = () => {
   };
 
   const handleSubmit = async (values) => {
-    
     try {
-       const formData = new FormData();
-    
-    
-        const calculatedTTC = calculateTTC(values.sale_price_ht, values.tva);
-        const finalValues = {
-          ...values,
-          sale_price_ttc: calculatedTTC
-        };
-        
-        Object.keys(finalValues).forEach(key => {
-          if (key === 'image' && finalValues[key] && finalValues[key].length > 0) {
-            formData.append(key, finalValues[key][0]);
-          } else if (key !== 'image') {
-            formData.append(key, finalValues[key] || '');
-          }
-        });
+      const selectedImage = values.image?.[0] || null;
 
-        for (let [key, value] of formData.entries()) {
-          console.log(key, value);
+      if (selectedImage && !selectedImage.type.startsWith('image/')) {
+        toast.current.show({
+          severity: 'error',
+          summary: 'Erreur',
+          detail: 'Le fichier choisi doit être une image',
+          life: 3000
+        });
+        return { success: false };
+      }
+
+      if (selectedImage && selectedImage.size > 2048 * 1024) {
+        toast.current.show({
+          severity: 'error',
+          summary: 'Erreur',
+          detail: 'L’image ne doit pas dépasser 2 Mo',
+          life: 3000
+        });
+        return { success: false };
+      }
+
+      const calculatedTTC = calculateTTC(values.sale_price_ht, values.tva);
+      const finalValues = {
+        ...values,
+        sale_price_ttc: calculatedTTC
+      };
+
+      const formData = new FormData();
+
+      Object.keys(finalValues).forEach(key => {
+        const value = finalValues[key];
+
+        if (key === 'image') {
+          if (selectedImage) {
+            formData.append(key, selectedImage);
+          }
+          return;
         }
 
-        const response = await ApiService.post('/api/products', finalValues, {
-          headers: {
-            'Content-Type': 'multipart/form-data'
-          }
-        });
+        if (value !== null && value !== undefined && value !== '') {
+          formData.append(key, value);
+        }
+      });
+
+      const response = await ApiService.uploadFile('/api/products', formData);
 
         if (response.success) {
           // Afficher un toast de succès
@@ -264,7 +283,7 @@ const ProductCreateScreen = () => {
               )}
               
               {!loadingOptions && (
-                <form onSubmit={form.handleSubmit}>
+              <form onSubmit={form.handleSubmit} encType="multipart/form-data">
                   <div className="row">
                     {/* Informations de base */}
                     <div className="col-md-6">

@@ -1,8 +1,8 @@
 
 const IS_LOCAL_DEV = import.meta.env.VITE_APP_DEV_MODE_LOCAL === 'true';
 const API_BASE_URL = IS_LOCAL_DEV
-  ? import.meta.env.VITE_APP_BASE_URL_LOCAL ?? 'http://127.0.0.1:8000'
-  : import.meta.env.VITE_APP_BASE_URL ?? 'http://127.0.0.1:8000';
+  ? import.meta.env.VITE_APP_BASE_URL_LOCAL ?? 'http://127.0.0.1:8001'
+  : import.meta.env.VITE_APP_BASE_URL ?? 'http://127.0.0.1:8001';
 
 export const API_CONFIG = {
   BASE_URL: API_BASE_URL,

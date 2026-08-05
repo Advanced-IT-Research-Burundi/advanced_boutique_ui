@@ -101,18 +101,24 @@ const ProformaEditScreen = () => {
     return fallback;
   };
 
-  const buildCartItem = (item) => ({
-    product_id: item.product_id,
-    name: item.name || item.product_name || `Produit ${item.product_id}`,
-    code: item.code || `PROD${item.product_id}`,
-    quantity: parseFloat(item.quantity) || 1,
-    sale_price: parseFloat(item.sale_price) || 0,
-    discount: 0,
-    discount_fbu: parseFloat(item.discount) || 0,
-    unit: item.unit || "pcs",
-    available_stock: parseFloat(item.available_stock) || 0,
-    image: item.image || null
-  });
+  const buildCartItem = (item) => {
+    const stockProductId = item.stock_product_id ?? item.product_id;
+
+    return {
+      product_id: stockProductId,
+      stock_product_id: stockProductId,
+      real_product_id: item.real_product_id ?? null,
+      name: item.name || item.product_name || `Produit ${stockProductId}`,
+      code: item.code || `PROD${stockProductId}`,
+      quantity: parseFloat(item.quantity) || 1,
+      sale_price: parseFloat(item.sale_price) || 0,
+      discount: 0,
+      discount_fbu: parseFloat(item.discount) || 0,
+      unit: item.unit || "pcs",
+      available_stock: parseFloat(item.available_stock) || 0,
+      image: item.image || null
+    };
+  };
 
   const initializeProformaData = async (proformaData, enrichedItems = null, client = null) => {
   try {
@@ -248,9 +254,18 @@ const ProformaEditScreen = () => {
   };
 
   const handleAddProduct = (product) => {
-    addItem(product);
+    console.log('[ProformaEdit][handleAddProduct] Produit cliqué:', product);
+
+    const added = addItem(product);
+
+    if (!added) {
+      showToast("error", "Impossible d'ajouter ce produit au panier");
+      return;
+    }
+    // console.log("Produit ajouté au panier:", product);
+
     showToast("success", "Produit ajouté au panier");
-    setProducts(products.filter((p) => p.id !== product.id));
+    setProducts((prevProducts) => prevProducts.filter((p) => String(p.id) !== String(product.id)));
   };
 
   const handleRemoveItem = (productId) => {
@@ -290,7 +305,9 @@ const ProformaEditScreen = () => {
         note: note,
         invoice_type: invoiceType,
         items: items.map((item) => ({
-          product_id: item.product_id,
+          product_id: item.stock_product_id ?? item.product_id,
+          stock_product_id: item.stock_product_id ?? item.product_id,
+          real_product_id: item.real_product_id,
           quantity: item.quantity,
           sale_price: item.sale_price,
           discount: item.discount_fbu || 0,

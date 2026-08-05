@@ -13,38 +13,94 @@ const CART_ACTIONS = {
   SET_LOADING: 'SET_LOADING'
 };
 
+const getStockProductId = (product) => (
+  product?.stock_product_id
+  ?? product?.stockProductId
+  ?? product?.id
+  ?? product?.product_id
+);
+
+const getRealProductId = (product) => (
+  product?.real_product_id
+  ?? product?.realProductId
+  ?? product?.product?.id
+  ?? (product?.stock_product_id || product?.id ? product?.product_id : null)
+);
+
+const getCartItemId = (item) => item?.stock_product_id ?? item?.product_id;
+
 
 const cartReducer = (state, action) => {
   switch (action.type) {
     case CART_ACTIONS.ADD_ITEM: {
       const { product } = action.payload;
-      const existingItemIndex = state.items.findIndex(item => item.product_id === product.id);
+      const stockProductId = getStockProductId(product);
+      const realProductId = getRealProductId(product);
+
+      console.log('[Cart][ADD_ITEM] Produit sélectionné:', {
+        product,
+        stockProductId,
+        realProductId,
+        currentItems: state.items,
+      });
+
+      if (!stockProductId) {
+        console.error('[Cart][ADD_ITEM][BLOQUE] Produit sans ID stock utilisable. Champs attendus: stock_product_id ou id.', product);
+        return state;
+      }
+
+      const existingItemIndex = state.items.findIndex(item => String(getCartItemId(item)) === String(stockProductId));
       
       if (existingItemIndex >= 0) {
         const updatedItems = [...state.items];
         updatedItems[existingItemIndex] = {
           ...updatedItems[existingItemIndex],
+          stock_product_id: stockProductId,
+          real_product_id: realProductId ?? updatedItems[existingItemIndex].real_product_id ?? null,
+          name: product.name || product.product_name || product.product?.name || updatedItems[existingItemIndex].name,
+          code: product.code || product.product?.code || updatedItems[existingItemIndex].code,
           quantity: updatedItems[existingItemIndex].quantity + 1
         };
+
+        console.log('[Cart][ADD_ITEM] Produit déjà dans le panier, quantité augmentée:', {
+          stockProductId,
+          realProductId,
+          before: state.items[existingItemIndex],
+          after: updatedItems[existingItemIndex],
+          nextItems: updatedItems,
+        });
+
         return {
           ...state,
           items: updatedItems
         };
       } else {
-        const tva = Number(((product.sale_price_ttc - product.sale_price_ht) || 0).toFixed(2));
+        const salePrice = parseFloat(product.sale_price_ttc ?? product.sale_price ?? 0) || 0;
+        const salePriceHt = parseFloat(product.sale_price_ht ?? 0) || 0;
+        const tva = parseFloat(product.tva ?? (salePrice - salePriceHt)) || 0;
         const newItem = {
-          product_id: product.id,
-          name: product.name,
-          code: product.code,
+          product_id: stockProductId,
+          stock_product_id: stockProductId,
+          real_product_id: realProductId,
+          name: product.name || product.product_name || product.product?.name || `Produit ${stockProductId}`,
+          code: product.code || product.product?.code || `PROD${stockProductId}`,
           quantity: 1,
-          sale_price: product.sale_price_ttc || 0,
+          sale_price: salePrice,
           discount: 0,
           tva: tva,
           discount_fbu: 0, 
-          unit: product.unit,
-          available_stock: product.quantity_disponible || 0,
-          image: product.image
+          unit: product.unit || product.product?.unit || 'pcs',
+          available_stock: product.quantity_disponible ?? product.available_stock ?? product.quantity ?? 0,
+          image: product.image || product.product?.image
         };
+
+        console.log('[Cart][ADD_ITEM] Nouvel item ajouté au panier:', {
+          stockProductId,
+          realProductId,
+          newItem,
+          nextItems: [...state.items, newItem],
+        });
+
         return {
           ...state,
           items: [...state.items, newItem]
@@ -55,7 +111,7 @@ const cartReducer = (state, action) => {
     case CART_ACTIONS.REMOVE_ITEM: {
       return {
         ...state,
-        items: state.items.filter(item => item.product_id !== action.payload.productId)
+        items: state.items.filter(item => String(getCartItemId(item)) !== String(action.payload.productId))
       };
     }
 
@@ -72,7 +128,7 @@ const cartReducer = (state, action) => {
       return {
         ...state,
         items: state.items.map(item =>
-          item.product_id === productId
+          String(getCartItemId(item)) === String(productId)
             ? { ...item, quantity: parseFloat(quantity) }
             : item
         )
@@ -84,7 +140,7 @@ const cartReducer = (state, action) => {
       return {
         ...state,
         items: state.items.map(item =>
-          item.product_id === productId
+          String(getCartItemId(item)) === String(productId)
             ? { ...item, sale_price: parseFloat(price) }
             : item
         )
@@ -97,7 +153,7 @@ const cartReducer = (state, action) => {
       return {
         ...state,
         items: state.items.map(item =>
-          item.product_id === productId
+          String(getCartItemId(item)) === String(productId)
             ? { ...item, discount: Math.max(0, Math.min(100, parseFloat(discount) || 0)) }
             : item
         )
@@ -110,7 +166,7 @@ const cartReducer = (state, action) => {
       return {
         ...state,
         items: state.items.map(item =>
-          item.product_id === productId
+          String(getCartItemId(item)) === String(productId)
             ? { ...item, discount_fbu: Math.max(0, parseFloat(discountFBU) || 0) }
             : item
         )
@@ -118,6 +174,10 @@ const cartReducer = (state, action) => {
     }
 
     case CART_ACTIONS.CLEAR_CART: {
+      console.warn('[Cart][CLEAR_CART] Panier vidé:', {
+        previousItems: state.items,
+      });
+
       return {
         ...state,
         items: []
@@ -125,6 +185,11 @@ const cartReducer = (state, action) => {
     }
 
     case CART_ACTIONS.LOAD_CART: {
+      console.warn('[Cart][LOAD_CART] Panier remplacé:', {
+        previousItems: state.items,
+        loadedItems: action.payload.items || [],
+      });
+
       return {
         ...state,
         items: action.payload.items || []
@@ -225,19 +290,81 @@ export const CartProvider = ({ children }) => {
   }, [state.items]);
   
   const getStockProformaErrors = React.useMemo(() => {
-   return state.items.filter(item => {
-    console.log(item)
-      // const quantity = parseFloat(item.quantity) || 0;
-      // const availableStock = parseFloat(item.available_stock) || 0;
+    console.log('[Cart][getStockProformaErrors] Analyse du panier proforma:', {
+      itemsCount: state.items.length,
+      items: state.items,
+    });
+
+    return state.items.filter(item => {
+      const quantity = parseFloat(item.quantity) || 0;
+      const availableStock = parseFloat(item.available_stock) || 0;
+      const price = parseFloat(item.sale_price) || 0;
+      const hasProductId = Boolean(getCartItemId(item));
+
+      const blockers = [];
+
+      if (!hasProductId) {
+        blockers.push('product_id manquant');
+      }
+
+      if (quantity <= 0) {
+        blockers.push('quantité <= 0');
+      }
+
+      if (price <= 0) {
+        blockers.push('prix <= 0');
+      }
+
+      if (quantity > availableStock) {
+        blockers.push(`quantité (${quantity}) > stock disponible (${availableStock})`);
+      }
+
+      // if (blockers.length > 0) {
+      //   console.warn('[Cart][getStockProformaErrors][A_VERIFIER]', {
+      //     product_id: item.product_id,
+      //     name: item.name,
+      //     blockers,
+      //     item,
+      //   });
+
+      //   return false;
+      // }
+
+      console.log('[Cart][getStockProformaErrors][OK]', {
+        product_id: item.product_id,
+        stock_product_id: item.stock_product_id,
+        real_product_id: item.real_product_id,
+        name: item.name,
+        quantity,
+        availableStock,
+        price,
+      });
+
       return false;
     });
   }, [state.items]);
 
   const addItem = React.useCallback((product) => {
+    const stockProductId = getStockProductId(product);
+    const realProductId = getRealProductId(product);
+
+    if (!stockProductId) {
+      console.error('[Cart][addItem][BLOQUE] Aucun ID stock détecté pour ce produit:', product);
+      return false;
+    }
+
+    console.log('[Cart][addItem] Dispatch ADD_ITEM:', {
+      stockProductId,
+      realProductId,
+      product,
+    });
+
     dispatch({
       type: CART_ACTIONS.ADD_ITEM,
       payload: { product }
     });
+
+    return true;
   }, []);
 
   const removeItem = React.useCallback((productId) => {
@@ -297,11 +424,11 @@ export const CartProvider = ({ children }) => {
 
   // Fonctions utilitaires
   const getItemByProductId = React.useCallback((productId) => {
-    return state.items.find(item => item.product_id === productId);
+    return state.items.find(item => String(getCartItemId(item)) === String(productId));
   }, [state.items]);
 
   const isProductInCart = React.useCallback((productId) => {
-    return state.items.some(item => item.product_id === productId);
+    return state.items.some(item => String(getCartItemId(item)) === String(productId));
   }, [state.items]);
 
   const getTotalQuantity = React.useCallback(() => {

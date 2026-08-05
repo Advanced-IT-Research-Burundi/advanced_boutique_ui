@@ -53,7 +53,12 @@ const ProformaScreen = () => {
   
   useEffect(() => {
     if (data) {
-      setProformas(data?.proformas?.data || []);
+      const sortedProformas = [...(data?.proformas?.data || [])].sort((a, b) => {
+        const createdAtDiff = new Date(b.created_at || 0) - new Date(a.created_at || 0);
+        return createdAtDiff || Number(b.id || 0) - Number(a.id || 0);
+      });
+
+      setProformas(sortedProformas);
       setStats(data?.stats || {});
       setPagination({
         current_page: data?.proformas?.current_page,
@@ -497,9 +502,9 @@ const ProformaScreen = () => {
                         </td>
                         <td className="px-2">
                           <div>
-                            <strong>{formatDate(proforma.sale_date)}</strong>
+                            <strong>{formatDate(proforma.created_at)}</strong>
                             <br />
-                            <small className="text-muted">{getTimeAgo(proforma.sale_date)}</small>
+                            <small className="text-muted">{getTimeAgo(proforma.created_at)}</small>
                           </div>
                         </td>
                         <td className="px-2">

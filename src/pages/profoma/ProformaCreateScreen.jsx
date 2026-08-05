@@ -4,6 +4,8 @@ import { useCart } from "../../contexts/cartReducer.jsx";
 import ApiService from "../../services/api.js";
 import { Link, useNavigate ,useSearchParams} from "react-router-dom";
 
+const getStockProductId = (item) => item?.stock_product_id ?? item?.product_id ?? item?.id;
+
 const ProformaCreateScreen = () => {
   const {
     items,
@@ -199,11 +201,17 @@ const ProformaCreateScreen = () => {
     //   return;
     // }
 
-    addItem(product);
+    const added = addItem(product);
+
+    if (!added) {
+      showToast("error", "Impossible d'ajouter ce produit au panier");
+      return;
+    }
+
     showToast("success", "Produit ajouté au panier");
 
     // Retirer le produit de la liste
-    setProducts(products.filter((p) => p.id !== product.id));
+    setProducts((prevProducts) => prevProducts.filter((p) => String(getStockProductId(p)) !== String(getStockProductId(product))));
   };
 
   const handleRemoveItem = (productId) => {
@@ -250,7 +258,9 @@ const ProformaCreateScreen = () => {
         note: note,
         invoice_type: invoiceType,
         items: items.map((item) => ({
-          product_id: item.product_id,
+          product_id: getStockProductId(item),
+          stock_product_id: getStockProductId(item),
+          real_product_id: item.real_product_id,
           quantity: item.quantity,
           sale_price: item.sale_price,
           discount: item.discount_fbu || 0,
@@ -285,7 +295,7 @@ const ProformaCreateScreen = () => {
    const handleSetDiscountGlobal = () => {
     items.map((item) => {
       updateDiscountFBU(
-        item.product_id,
+        getStockProductId(item),
         parseFloat(discountGlobal) || 0
       )
     });
@@ -594,7 +604,7 @@ const ProformaCreateScreen = () => {
                     style={{ maxHeight: "400px", overflowY: "auto" }}
                   >
                     {products.map((product) => (
-                      <div key={product.id} className="col-md-6">
+                      <div key={getStockProductId(product)} className="col-md-6">
                         <div
                           className="card h-100 product-card border-0 shadow-sm"
                           style={{ cursor: "pointer" }}
@@ -793,10 +803,11 @@ const ProformaCreateScreen = () => {
                         const availableStock = item.available_stock || 0;
                         const isOverStock = quantity > availableStock;
                         const isDiscountTooHigh = totalDiscountAmount > subtotal;
+                        const itemId = getStockProductId(item);
 
                         return (
                           <tr
-                            key={item.product_id}
+                            key={itemId}
                             className={isOverStock ? "table-danger" : ""}
                           >
                             <td className="text-center">
@@ -861,7 +872,7 @@ const ProformaCreateScreen = () => {
                                 value={item.quantity}
                                 onChange={(e) =>
                                   updateQuantity(
-                                    item.product_id,
+                                    itemId,
                                     e.target.value 
                                   )
                                 }
@@ -878,7 +889,7 @@ const ProformaCreateScreen = () => {
                                 value={item.sale_price}
                                 onChange={(e) =>
                                   updatePrice(
-                                    item.product_id,
+                                    itemId,
                                     parseFloat(e.target.value) || 0
                                   )
                                 }
@@ -896,7 +907,7 @@ const ProformaCreateScreen = () => {
                                 value={item.discount_fbu || 0}
                                 onChange={(e) =>
                                   updateDiscountFBU(
-                                    item.product_id,
+                                    itemId,
                                     parseFloat(e.target.value) || 0
                                   )
                                 }
@@ -942,7 +953,7 @@ const ProformaCreateScreen = () => {
                                 type="button"
                                 className="btn btn-outline-danger btn-sm"
                                 onClick={() =>
-                                  handleRemoveItem(item.product_id)
+                                  handleRemoveItem(itemId)
                                 }
                                 title="Supprimer"
                               >

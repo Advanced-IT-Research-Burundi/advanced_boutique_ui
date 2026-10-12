@@ -3,6 +3,7 @@ import * as XLSX from 'xlsx';
 import { Toast } from 'primereact/toast';
 import ApiService from '../../services/api.js';
 import ImportHeader from './ImportHeader.jsx';
+import ManualProductForm from './ManualProductForm.jsx';
 
 const ExcelReader = () => {
   const [data, setData] = useState([]);
@@ -203,7 +204,7 @@ const ExcelReader = () => {
       <div className="row g-4">
         {/* File Upload Section */}
         <div className="col-lg-4">
-          <div className="card shadow-sm border-0 h-100">
+          <div className="card shadow-sm border-0 mb-4">
             <div className="card-header bg-primary text-white">
               <h5 className="mb-0">
                 <i className="pi pi-upload me-2"></i>1. Sélection du fichier
@@ -286,6 +287,21 @@ const ExcelReader = () => {
                   </button>
                 </div>
               )}
+            </div>
+          </div>
+
+          {/* Manual Product Entry */}
+          <div className="card shadow-sm border-0">
+            <div className="card-header bg-primary text-white">
+              <h5 className="mb-0">
+                <i className="pi pi-pencil me-2"></i>Ou ajouter un produit manuellement
+              </h5>
+            </div>
+            <div className="card-body">
+              <ManualProductForm
+                onSaved={(product) => showToast('success', `Produit "${product.product_code} - ${product.item_name}" ajouté avec succès`)}
+                onError={(message) => showToast('error', message)}
+              />
             </div>
           </div>
         </div>
